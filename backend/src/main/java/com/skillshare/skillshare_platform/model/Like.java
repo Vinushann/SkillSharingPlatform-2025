@@ -8,29 +8,25 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "likes", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "post_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Like {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "like_id")
+    private Long likeId;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String username;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String email;
-
-    @Column(name = "profile_picture", length = 255)
-    private String profilePicture;
-
-    @Column(columnDefinition = "TEXT")
-    private String bio;
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private SkillPost post;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
