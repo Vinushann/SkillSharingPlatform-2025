@@ -39,6 +39,15 @@ public class LearningPlanService {
             throw new ResourceConflictException("Learning plan with title '" + dto.getTitle() + "' already exists for user");
         }
 
+        if (dto.getTopics() != null && dto.getTopicStatuses() != null &&
+                dto.getTopics().size() != dto.getTopicStatuses().size()) {
+            throw new IllegalArgumentException("Number of topics and statuses must match");
+        }
+        if (dto.getStartDate() != null && dto.getEndDate() != null &&
+                dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("End date must be after start date");
+        }
+
         LearningPlan plan = new LearningPlan();
         plan.setUser(user);
         plan.setTitle(dto.getTitle());
@@ -66,6 +75,15 @@ public class LearningPlanService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + dto.getUserId()));
 
+        if (dto.getTopics() != null && dto.getTopicStatuses() != null &&
+                dto.getTopics().size() != dto.getTopicStatuses().size()) {
+            throw new IllegalArgumentException("Number of topics and statuses must match");
+        }
+        if (dto.getStartDate() != null && dto.getEndDate() != null &&
+                dto.getEndDate().isBefore(dto.getStartDate())) {
+            throw new IllegalArgumentException("End date must be after start date");
+        }
+
         if (!plan.getTitle().equals(dto.getTitle()) &&
                 learningPlanRepository.existsByUserUserIdAndTitle(dto.getUserId(), dto.getTitle())) {
             throw new ResourceConflictException("Learning plan with title '" + dto.getTitle() + "' already exists for user");
@@ -88,6 +106,7 @@ public class LearningPlanService {
         if (!learningPlanRepository.existsById(id)) {
             throw new ResourceNotFoundException("Learning plan not found with ID: " + id);
         }
+
         learningPlanRepository.deleteById(id);
     }
 
