@@ -1,32 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Container, Box } from '@mui/material';
-import Header from '../components/Header';
-import SkillPostsSection from '../components/SkillPostsSection';
-import Footer from '../components/Footer';
-import { getSkillPosts } from '../services/skillPostService';
+import React from "react";
+import { Box, Typography } from "@mui/material";
 
-function HomePage() {
-    const [posts, setPosts] = useState([]);
-
-    useEffect(() => {
-        getSkillPosts()
-            .then(response => {
-                setPosts(response.content || []);
-            })
-            .catch(err => console.error(err));
-    }, []);
-
-    return (
-        <>
-            <Header />
-            <Container sx={{ mt: 4, mb: 8 }}>
-                <Box sx={{ mt: 8 }}>
-                    <SkillPostsSection posts={posts} />
-                </Box>
-            </Container>
-            <Footer />
-        </>
-    );
-}
+const HomePage = () => {
+  return (
+    <Box p={4}>
+      <Typography variant="h3" fontWeight="bold">
+        Welcome to Skill Share!
+      </Typography>
+      <Typography variant="body1" mt={2}>
+        Start your journey by creating or following a learning plan.
+      </Typography>
+    </Box>
+  );
+};
 
 export default HomePage;
