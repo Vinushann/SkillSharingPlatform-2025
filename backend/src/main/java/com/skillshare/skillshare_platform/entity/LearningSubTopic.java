@@ -10,7 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class LearningSubTopic {
-
+// Add LearningSubTopic entity with name, description, duration, resource, and FK to LearningPlan
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
