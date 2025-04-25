@@ -24,4 +24,8 @@ public class LearningPlan {
     @JsonManagedReference
     private List<LearningSubTopic> subTopics = new ArrayList<>();
     private boolean isTemplate;
+
+
+
+    
 }
