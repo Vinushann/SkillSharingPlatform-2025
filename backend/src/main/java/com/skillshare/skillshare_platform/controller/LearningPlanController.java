@@ -15,6 +15,7 @@ import java.util.List;
 @RequestMapping("/api/v1/learning-plans")
 @RequiredArgsConstructor
 public class LearningPlanController {
+    //Create LearningPlanController with POST and GET endpoints
 
     private final LearningPlanService service;
 
