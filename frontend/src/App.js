@@ -1,19 +1,20 @@
-import React from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from './theme';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainLayout from "./components/MainLayout";
+import HomePage from "./pages/HomePage";
+import LearningHomePage from "./pages/LearningHomePage";
 
-function App() {
+const App = () => {
   return (
-      <ThemeProvider theme={theme}>
-          <BrowserRouter>
-              <Routes>
-                  <Route path="/" element={<HomePage />} />
-              </Routes>
-          </BrowserRouter>
-      </ThemeProvider>
+    <Router>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/learning" element={<LearningHomePage />} />
+        </Route>
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
