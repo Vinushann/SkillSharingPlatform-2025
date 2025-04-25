@@ -12,258 +12,606 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  Divider
+  Divider,
+  Chip,
+  Grid,
+  FormControlLabel,
+  Checkbox
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import learningPlans from "../components/learningPlans";
 
-// 👇 Functional component for Learning Home Page
 const LearningHomePage = () => {
-  // --- STATE HOOKS ---
-  const [openDialog, setOpenDialog] = useState(false); // controls dialog open/close
-  const [tab, setTab] = useState(0); // tab index: 0 = Template, 1 = Create One
-  const [mainTitle, setMainTitle] = useState(""); // title of the custom plan
+  const [openDialog, setOpenDialog] = useState(false);
+  const [tab, setTab] = useState(0);
+  const [mainTitle, setMainTitle] = useState("");
   const [subTopics, setSubTopics] = useState([
-    // list of subtopics added dynamically
-    { id: 1, name: "", description: "", duration: "", resource: "" }
+    { id: 1, name: "", description: "", duration: "", resource: "", goals: "", exercises: "", completed: false }
   ]);
-  const [showPreview, setShowPreview] = useState(false); // toggles preview mode
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  // --- EVENT HANDLERS ---
+  const handleTabChange = (_, newValue) => {
+    setTab(newValue);
+    setSelectedPlan(null); // Reset selected plan when switching tabs
+    setShowPreview(false); // Reset preview mode
+    setErrors({}); // Clear errors
+  };
 
-  // Tab switch handler
-  const handleTabChange = (_, newValue) => setTab(newValue);
-
-  // Adds a new subtopic block to the form
   const addSubTopic = () => {
     setSubTopics([
       ...subTopics,
-      { id: subTopics.length + 1, name: "", description: "", duration: "", resource: "" }
+      { id: subTopics.length + 1, name: "", description: "", duration: "", resource: "", goals: "", exercises: "", completed: false }
     ]);
   };
 
-  // Removes a subtopic by ID
   const removeSubTopic = (id) => {
     setSubTopics(subTopics.filter(topic => topic.id !== id));
   };
 
-  // Updates a field in a specific subtopic
   const handleInputChange = (id, field, value) => {
     const updated = subTopics.map(topic =>
       topic.id === id ? { ...topic, [field]: value } : topic
     );
     setSubTopics(updated);
+
+    // Clear error for this field if it now has a value
+    if (value) {
+      setErrors(prev => ({
+        ...prev,
+        [`${id}-${field}`]: ""
+      }));
+    }
   };
 
-  // --- TEMPORARY HARDCODED TEMPLATE DATA ---
-  const templates = [
-    {
-      title: "Frontend Development Learning",
-      topics: ["HTML", "CSS", "React"],
-      duration: "3 weeks"
-    },
-    {
-      title: "AI for Starters",
-      topics: ["Python", "Numpy", "Pandas"],
-      duration: "4 weeks"
-    },
-    {
-      title: "DevOps Essentials",
-      topics: ["Git", "Docker", "CI/CD"],
-      duration: "2 weeks"
-    },
-    {
-      title: "UI/UX Crash Course",
-      topics: ["Figma", "Design Systems", "Accessibility"],
-      duration: "2 weeks"
-    }
-  ];
+  const handleUsePlan = (plan) => {
+    setSelectedPlan(plan);
+    setShowPreview(true);
+  };
 
-  // --- MAIN RETURN BLOCK ---
+  const handlePostPlan = async () => {
+    if (!selectedPlan) return;
+
+    const planData = {
+      title: selectedPlan.title,
+      duration: selectedPlan.duration,
+      subtopics: selectedPlan.subtopics.map(sub => ({
+        name: sub.name,
+        description: sub.description,
+        duration: sub.duration,
+        resource: sub.resource,
+        goals: sub.goals,
+        exercises: sub.exercises
+      }))
+    };
+
+    try {
+      console.log("Posting plan to backend:", planData);
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error posting plan:", error);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    // Validate main title
+    if (!mainTitle.trim()) {
+      newErrors.mainTitle = "Plan title is required";
+      isValid = false;
+    }
+
+    // Validate each subtopic
+    subTopics.forEach(topic => {
+      const fields = ["name", "description", "duration", "resource", "goals", "exercises"];
+      fields.forEach(field => {
+        if (!topic[field].trim()) {
+          newErrors[`${topic.id}-${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+          isValid = false;
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handlePreviewClick = () => {
+    if (validateForm()) {
+      setShowPreview(true);
+    }
+  };
+
   return (
-    <Box sx={{ maxWidth: "1000px", mx: "auto", mt: 8, px: 3 }}>
-      {/* Header with Title and CTA button */}
+    <Box sx={{ maxWidth: "1200px", mx: "auto", mt: 6, px: 4 }}>
+      {/* Header Section */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          mb: 6
+          mb: 6,
+          background: "#e3f2fd",
+          p: 4,
+          borderRadius: 3,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
         }}
       >
         <Box>
-          <Typography variant="h3" fontWeight="bold">
-            Time to share your learning progress!
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            sx={{ color: "#1a237e", mb: 1 }}
+          >
+            Share Your Learning Journey
           </Typography>
-          <Typography variant="subtitle1" color="textSecondary" mt={2}>
-            Let the world know what you're working on.
+          <Typography
+            variant="subtitle1"
+            sx={{ color: "#3949ab", fontStyle: "italic" }}
+          >
+            Inspire others with your progress and goals.
           </Typography>
         </Box>
-
-        {/* Dialog trigger */}
-        <Button variant="contained" size="large" sx={{ height: "48px" }} onClick={() => setOpenDialog(true)}>
-          Initiate
+        <Button
+          variant="contained"
+          size="large"
+          sx={{
+            backgroundColor: "#3f51b5",
+            "&:hover": { backgroundColor: "#303f9f" },
+            borderRadius: 2,
+            px: 4,
+            py: 1.5,
+            fontWeight: "bold"
+          }}
+          onClick={() => setOpenDialog(true)}
+        >
+          Start Learning
         </Button>
       </Box>
 
       {/* Dialog Modal */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="md">
-        <DialogTitle>{showPreview ? "Preview Learning Plan" : "Select or Create a Learning Plan"}</DialogTitle>
-        <DialogContent>
-
-          {/* IF NOT IN PREVIEW MODE */}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        fullWidth
+        maxWidth="md"
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: 3,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            background: "#ffffff"
+          }
+        }}
+      >
+        <DialogTitle sx={{ backgroundColor: "#ffffff", color: "#1a237e", py: 3 }}>
+          <Typography variant="h5" fontWeight="bold">
+            {showPreview
+              ? (selectedPlan ? selectedPlan.title : mainTitle || "Untitled Plan")
+              : "Select or Create a Plan"}
+          </Typography>
+          {showPreview && (
+            <Typography variant="body2" sx={{ color: "#546e7a", mt: 1 }}>
+              Total Duration: {selectedPlan
+                ? selectedPlan.duration
+                : subTopics.reduce((total, topic) => total + (parseInt(topic.duration) || 0), 0) + " days"}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
           {!showPreview ? (
             <>
-              {/* Tab Section */}
-              <Tabs value={tab} onChange={handleTabChange} centered>
-                <Tab label="Template" />
-                <Tab label="Create One" />
+              <Tabs
+                value={tab}
+                onChange={handleTabChange}
+                centered
+                sx={{
+                  mb: 4,
+                  "& .MuiTab-root": {
+                    fontWeight: "bold",
+                    color: "#3f51b5",
+                    textTransform: "uppercase",
+                    "&.Mui-selected": { color: "#1a237e" }
+                  },
+                  "& .MuiTabs-indicator": { backgroundColor: "#1a237e" }
+                }}
+              >
+                <Tab label="Templates" />
+                <Tab label="Create Your Own" />
               </Tabs>
 
-              <Box mt={4}>
-                {/* === Template Tab === */}
+              <Box>
                 {tab === 0 && (
-                  <Box display="flex" flexDirection="column" gap={3}>
-                    {templates.map((plan, idx) => (
-                      <Paper
-                        key={idx}
-                        elevation={3}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          p: 3,
-                          borderRadius: 3,
-                          backgroundColor: "#f4f4f4"
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="h6" fontWeight="bold">{plan.title}</Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Topics: {plan.topics.join(", ")}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Duration: {plan.duration}
-                          </Typography>
-                        </Box>
-                        <Button variant="contained" color="primary">use</Button>
-                      </Paper>
-                    ))}
-                  </Box>
+                  <Grid container spacing={3}>
+                    {learningPlans && Array.isArray(learningPlans) ? (
+                      learningPlans.map((plan, idx) => (
+                        <Grid item xs={12} key={idx}>
+                          <Paper
+                            elevation={3}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              p: 3,
+                              borderRadius: 3,
+                              background: "#ffffff",
+                              minHeight: "120px",
+                              transition: "transform 0.2s",
+                              "&:hover": {
+                                transform: "translateY(-4px)",
+                                boxShadow: "0 6px 20px rgba(0,0,0,0.1)"
+                              }
+                            }}
+                          >
+                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                              <Typography
+                                variant="h6"
+                                fontWeight="bold"
+                                sx={{ color: "#1a237e" }}
+                              >
+                                {plan.title}
+                              </Typography>
+                              <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                                {plan.subtopics.map((sub, i) => (
+                                  <Chip
+                                    key={i}
+                                    label={sub.name}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: "#e8eaf6",
+                                      color: "#3f51b5",
+                                      fontWeight: "medium",
+                                      borderRadius: 1,
+                                      maxWidth: "150px", // Prevent chips from stretching too wide
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap"
+                                    }}
+                                  />
+                                ))}
+                              </Box>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#546e7a", mt: 1 }}
+                              >
+                                Duration: {plan.duration}
+                              </Typography>
+                            </Box>
+                            <Button
+                              variant="contained"
+                              sx={{
+                                backgroundColor: "#3f51b5",
+                                "&:hover": { backgroundColor: "#303f9f" },
+                                borderRadius: 2,
+                                px: 3,
+                                py: 1,
+                                fontWeight: "bold",
+                                textTransform: "uppercase",
+                                flexShrink: 0 // Prevent button from shrinking
+                              }}
+                              onClick={() => handleUsePlan(plan)}
+                            >
+                              Use Plan
+                            </Button>
+                          </Paper>
+                        </Grid>
+                      ))
+                    ) : (
+                      <Typography color="error">Error: Learning plans data is not available.</Typography>
+                    )}
+                  </Grid>
                 )}
 
-                {/* === Create Tab === */}
                 {tab === 1 && (
-                  <Box mt={3}>
-                    <Typography variant="h6" fontWeight="bold" mb={2}>Create your journey</Typography>
-
-                    {/* Main Title Field */}
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      sx={{ color: "#1a237e", mb: 3 }}
+                    >
+                      Craft Your Learning Journey
+                    </Typography>
                     <TextField
-                      label="Main Title"
-                      variant="filled"
+                      label="Plan Title"
+                      variant="outlined"
                       fullWidth
-                      sx={{ backgroundColor: '#eee', borderRadius: 1, mb: 3 }}
+                      sx={{
+                        mb: 3,
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                          backgroundColor: "#f5f7fa"
+                        }
+                      }}
                       value={mainTitle}
-                      onChange={(e) => setMainTitle(e.target.value)}
+                      onChange={(e) => {
+                        setMainTitle(e.target.value);
+                        if (e.target.value) {
+                          setErrors(prev => ({ ...prev, mainTitle: "" }));
+                        }
+                      }}
+                      error={!!errors.mainTitle}
+                      helperText={errors.mainTitle}
                     />
-
-                    {/* Subtopic Input Blocks */}
                     {subTopics.map((topic, index) => (
-                      <Paper key={topic.id} elevation={1} sx={{ p: 3, backgroundColor: '#eee', borderRadius: 2, mb: 2 }}>
-                        {/* Subtopic Name with Delete Icon */}
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Paper
+                        key={topic.id}
+                        elevation={2}
+                        sx={{
+                          p: 3,
+                          mb: 3,
+                          borderRadius: 3,
+                          backgroundColor: "#fafafa"
+                        }}
+                      >
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          mb={2}
+                        >
                           <TextField
-                            label="Sub topic name"
+                            label="Subtopic Name"
+                            variant="outlined"
                             value={topic.name}
                             onChange={(e) => handleInputChange(topic.id, 'name', e.target.value)}
                             fullWidth
+                            sx={{
+                              "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                            }}
+                            error={!!errors[`${topic.id}-name`]}
+                            helperText={errors[`${topic.id}-name`]}
                           />
                           {subTopics.length > 1 && (
-                            <IconButton onClick={() => removeSubTopic(topic.id)} color="error">
+                            <IconButton
+                              onClick={() => removeSubTopic(topic.id)}
+                              sx={{ color: "#ef5350", ml: 2 }}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           )}
                         </Box>
-
-                        {/* Subtopic Details */}
-                        <Box display="flex" flexDirection="column" gap={2} mt={2}>
-                          <TextField
-                            label="Description"
-                            multiline
-                            rows={3}
-                            fullWidth
-                            value={topic.description}
-                            onChange={(e) => handleInputChange(topic.id, 'description', e.target.value)}
-                          />
-                          <TextField
-                            label="Duration (in days)"
-                            type="number"
-                            fullWidth
-                            value={topic.duration}
-                            onChange={(e) => handleInputChange(topic.id, 'duration', e.target.value)}
-                          />
-                          <TextField
-                            label="Resource (YouTube/Article URL)"
-                            fullWidth
-                            value={topic.resource}
-                            onChange={(e) => handleInputChange(topic.id, 'resource', e.target.value)}
-                          />
-                        </Box>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Description"
+                              variant="outlined"
+                              multiline
+                              rows={3}
+                              fullWidth
+                              value={topic.description}
+                              onChange={(e) => handleInputChange(topic.id, 'description', e.target.value)}
+                              sx={{
+                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                              }}
+                              error={!!errors[`${topic.id}-description`]}
+                              helperText={errors[`${topic.id}-description`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Duration (e.g., 5 days)"
+                              variant="outlined"
+                              fullWidth
+                              value={topic.duration}
+                              onChange={(e) => handleInputChange(topic.id, 'duration', e.target.value)}
+                              sx={{
+                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                              }}
+                              error={!!errors[`${topic.id}-duration`]}
+                              helperText={errors[`${topic.id}-duration`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Resource (YouTube/Article URL)"
+                              variant="outlined"
+                              fullWidth
+                              value={topic.resource}
+                              onChange={(e) => handleInputChange(topic.id, 'resource', e.target.value)}
+                              sx={{
+                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                              }}
+                              error={!!errors[`${topic.id}-resource`]}
+                              helperText={errors[`${topic.id}-resource`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Goals"
+                              variant="outlined"
+                              multiline
+                              rows={2}
+                              fullWidth
+                              value={topic.goals}
+                              onChange={(e) => handleInputChange(topic.id, 'goals', e.target.value)}
+                              sx={{
+                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                              }}
+                              error={!!errors[`${topic.id}-goals`]}
+                              helperText={errors[`${topic.id}-goals`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Exercises"
+                              variant="outlined"
+                              multiline
+                              rows={2}
+                              fullWidth
+                              value={topic.exercises}
+                              onChange={(e) => handleInputChange(topic.id, 'exercises', e.target.value)}
+                              sx={{
+                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                              }}
+                              error={!!errors[`${topic.id}-exercises`]}
+                              helperText={errors[`${topic.id}-exercises`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={topic.completed}
+                                  onChange={(e) => handleInputChange(topic.id, 'completed', e.target.checked)}
+                                  sx={{ color: "#3f51b5", '&.Mui-checked': { color: "#3f51b5" } }}
+                                />
+                              }
+                              label="Mark as Completed"
+                              sx={{ color: "#37474f" }}
+                            />
+                          </Grid>
+                        </Grid>
                       </Paper>
                     ))}
-
-                    {/* Add + Preview Buttons */}
-                    <Box display="flex" justifyContent="space-between" mt={2}>
-                      <Button variant="outlined" onClick={() => setShowPreview(true)}>Preview</Button>
-                      <Button variant="contained" onClick={addSubTopic}>Add Subtopics</Button>
+                    <Box display="flex" justifyContent="space-between" mt={3}>
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          borderColor: "#3f51b5",
+                          color: "#3f51b5",
+                          borderRadius: 2,
+                          px: 4,
+                          "&:hover": { borderColor: "#303f9f", color: "#303f9f" }
+                        }}
+                        onClick={handlePreviewClick}
+                      >
+                        Preview Plan
+                      </Button>
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: "#3f51b5",
+                          "&:hover": { backgroundColor: "#303f9f" },
+                          borderRadius: 2,
+                          px: 4
+                        }}
+                        onClick={addSubTopic}
+                      >
+                        Add Subtopic
+                      </Button>
                     </Box>
                   </Box>
                 )}
               </Box>
             </>
           ) : (
-            // === PREVIEW MODE ===
             <Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                {mainTitle || "Untitled Plan"}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-
-              {/* Preview Each Subtopic */}
-              {subTopics.map((topic, idx) => (
-                <Box key={idx} mb={3}>
-                  <Typography variant="h6">### {topic.name || `Sub topic ${idx + 1}`}</Typography>
-                  <Typography color="textSecondary" mt={1}>{topic.description}</Typography>
-                  <Typography mt={1}><strong>Duration:</strong> {topic.duration} days</Typography>
-
-                  {/* Resource Preview (iframe for YouTube) */}
+              {(selectedPlan ? selectedPlan.subtopics : subTopics).map((topic, idx) => (
+                <Paper
+                  key={idx}
+                  elevation={2}
+                  sx={{
+                    mb: 3,
+                    p: 3,
+                    borderRadius: 3,
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e0e0e0"
+                  }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#1a237e", fontWeight: "bold" }}
+                    >
+                      {topic.name || `Subtopic ${idx + 1}`}
+                    </Typography>
+                    {!selectedPlan && (
+                      <Chip
+                        label={topic.completed ? "Completed" : "Not Completed"}
+                        color={topic.completed ? "success" : "default"}
+                        size="small"
+                        sx={{ fontWeight: "medium" }}
+                      />
+                    )}
+                  </Box>
+                  <Typography sx={{ color: "#37474f", mb: 1 }}>
+                    {topic.description}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Duration:</strong> {topic.duration}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Goals:</strong> {topic.goals || "Not specified"}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Exercises:</strong> {topic.exercises || "Not specified"}
+                  </Typography>
                   {topic.resource && (
                     <Box mt={2}>
-                      <Typography variant="subtitle2">Resource:</Typography>
-                      <iframe
-                        width="100%"
-                        height="200"
-                        src={topic.resource.replace("watch?v=", "embed/")}
-                        title={`resource-${idx}`}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
+                      <Typography variant="subtitle2" sx={{ color: "#3f51b5", mb: 1 }}>
+                        Resource:
+                      </Typography>
+                      <a
+                        href={topic.resource}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#3f51b5", textDecoration: "underline" }}
+                      >
+                        {topic.resource}
+                      </a>
+                      {topic.resource.includes("youtube.com") && (
+                        <Box mt={2}>
+                          <iframe
+                            width="100%"
+                            height="200"
+                            src={topic.resource.replace("watch?v=", "embed/")}
+                            title={`resource-${idx}`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{ borderRadius: 8 }}
+                          ></iframe>
+                        </Box>
+                      )}
                     </Box>
                   )}
-                  <Divider sx={{ mt: 3 }} />
-                </Box>
+                </Paper>
               ))}
             </Box>
           )}
         </DialogContent>
-
-        {/* Dialog Footer Buttons */}
-        <DialogActions>
+        <DialogActions sx={{ p: 3, backgroundColor: "#fafafa" }}>
           {showPreview ? (
-            <Button onClick={() => setShowPreview(false)} color="primary">Back to Edit</Button>
+            <>
+              <Button
+                onClick={() => setShowPreview(false)}
+                sx={{
+                  color: "#3f51b5",
+                  borderRadius: 2,
+                  px: 4
+                }}
+              >
+                Back to Edit
+              </Button>
+              {selectedPlan && (
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4caf50",
+                    "&:hover": { backgroundColor: "#388e3c" },
+                    borderRadius: 2,
+                    px: 4
+                  }}
+                  onClick={handlePostPlan}
+                >
+                  Post Plan
+                </Button>
+              )}
+            </>
           ) : (
-            <Button onClick={() => setOpenDialog(false)} color="error">Close</Button>
+            <Button
+              onClick={() => setOpenDialog(false)}
+              sx={{
+                color: "#ef5350",
+                borderRadius: 2,
+                px: 4
+              }}
+            >
+              Close
+            </Button>
           )}
         </DialogActions>
       </Dialog>
