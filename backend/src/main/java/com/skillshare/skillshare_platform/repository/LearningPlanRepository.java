@@ -7,5 +7,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LearningPlanRepository extends JpaRepository<LearningPlan, Long> {
+    // Add repository for LearningPlan with method to fetch templates
     List<LearningPlan> findByIsTemplateTrue();
+
 }
