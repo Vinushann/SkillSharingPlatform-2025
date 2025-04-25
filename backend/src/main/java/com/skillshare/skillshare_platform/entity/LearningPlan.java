@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+// the entity file
 @Entity
 @Data
 @NoArgsConstructor
@@ -24,8 +25,5 @@ public class LearningPlan {
     @JsonManagedReference
     private List<LearningSubTopic> subTopics = new ArrayList<>();
     private boolean isTemplate;
-
-
-
     
 }
