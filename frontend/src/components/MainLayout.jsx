@@ -16,9 +16,11 @@ import {
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
+import NoteTaking from "../pages/NoteTaking"; // Import the NoteTaking component
 
 const MainLayout = () => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [showNoteTaking, setShowNoteTaking] = useState(false); // State to toggle NoteTaking
   const open = Boolean(anchorEl);
 
   const handleMenuOpen = (event) => {
@@ -27,6 +29,10 @@ const MainLayout = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleNoteTakingToggle = () => {
+    setShowNoteTaking(!showNoteTaking); // Toggle the NoteTaking component
   };
 
   return (
@@ -106,12 +112,11 @@ const MainLayout = () => {
           {/* User Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton>
-              <NotificationsIcon
-                sx={{ color: "#3f51b5" }} />
+              <NotificationsIcon sx={{ color: "#3f51b5" }} />
             </IconButton>
             
-            <IconButton> 
-              <NoteAddIcon sx={{color: "green"}}> </NoteAddIcon>
+            <IconButton onClick={handleNoteTakingToggle}> 
+              <NoteAddIcon sx={{ color: "green" }} />
             </IconButton>
             
             <Avatar
@@ -153,7 +158,7 @@ const MainLayout = () => {
       </AppBar>
 
       <Box>
-        <Outlet />
+        {showNoteTaking ? <NoteTaking /> : <Outlet />}
       </Box>
     </Box>
   );
