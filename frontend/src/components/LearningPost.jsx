@@ -185,18 +185,18 @@ const LearningPost = () => {
 
       {/* Posts List */}
       {posts.map(post => (
-        <Box
-          key={post.id}
-          sx={{
-            maxWidth: "800px",
-            mx: "auto",
-            bgcolor: "white",
-            borderRadius: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            p: 4,
-            mb: 4
-          }}
-        >
+       <Box
+       key={post.id}
+       sx={{
+         maxWidth: "800px",
+         mx: "auto",
+         bgcolor: "white",
+         borderRadius: 3,
+         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.75)", // stronger shadow
+         p: 4,
+         mb: 4,
+       }}
+     >
           {/* User Info and Options */}
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
             <Box sx={{ display: "flex", alignItems: "center" }}>
