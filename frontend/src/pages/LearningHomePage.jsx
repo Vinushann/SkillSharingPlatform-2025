@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -16,7 +16,9 @@ import {
   Chip,
   Grid,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import learningPlans from "../components/learningPlans";
@@ -26,12 +28,40 @@ const LearningHomePage = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [tab, setTab] = useState(0);
   const [mainTitle, setMainTitle] = useState("");
-  const [subTopics, setSubTopics] = useState([
-    { id: 1, name: "", description: "", duration: "", resource: "", goals: "", exercises: "", completed: false }
-  ]);
+  const [subtopic, setSubtopic] = useState({
+    name: "",
+    description: "",
+    duration: "",
+    resource: "",
+    goals: "",
+    exercises: "",
+    completed: false
+  });
   const [showPreview, setShowPreview] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [errors, setErrors] = useState({});
+  const [plans, setPlans] = useState([]); // State to store retrieved plans
+  const [openSnackbar, setOpenSnackbar] = useState(false); // State for success alert
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // Message for success alert
+
+  // Fetch plans when the component mounts
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/plans");
+      if (response.ok) {
+        const data = await response.json();
+        setPlans(data);
+      } else {
+        console.error("Failed to fetch plans:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+    }
+  };
 
   const handleTabChange = (_, newValue) => {
     setTab(newValue);
@@ -40,28 +70,14 @@ const LearningHomePage = () => {
     setErrors({}); // Clear errors
   };
 
-  const addSubTopic = () => {
-    setSubTopics([
-      ...subTopics,
-      { id: subTopics.length + 1, name: "", description: "", duration: "", resource: "", goals: "", exercises: "", completed: false }
-    ]);
-  };
-
-  const removeSubTopic = (id) => {
-    setSubTopics(subTopics.filter(topic => topic.id !== id));
-  };
-
-  const handleInputChange = (id, field, value) => {
-    const updated = subTopics.map(topic =>
-      topic.id === id ? { ...topic, [field]: value } : topic
-    );
-    setSubTopics(updated);
+  const handleInputChange = (field, value) => {
+    setSubtopic(prev => ({ ...prev, [field]: value }));
 
     // Clear error for this field if it now has a value
     if (value) {
       setErrors(prev => ({
         ...prev,
-        [`${id}-${field}`]: ""
+        [field]: ""
       }));
     }
   };
@@ -72,52 +88,62 @@ const LearningHomePage = () => {
   };
 
   const handlePostPlan = async () => {
-    // Validate the form before posting
-    if (!validateForm()) return;
+    // Validate the form if creating a custom plan
+    if (!selectedPlan && !validateForm()) return;
 
     // Prepare the plan data based on whether it's a template plan or a custom plan
     const planData = selectedPlan
       ? {
-          title: selectedPlan.title,
-          duration: selectedPlan.duration,
-          subtopics: selectedPlan.subtopics.map(sub => ({
-            name: sub.name,
-            description: sub.description,
-            duration: sub.duration,
-            resource: sub.resource,
-            goals: sub.goals,
-            exercises: sub.exercises
-          }))
+          planTitle: selectedPlan.title,
+          subtopicName: selectedPlan.subtopics[0].name, // Use the first subtopic
+          description: selectedPlan.subtopics[0].description,
+          duration: selectedPlan.subtopics[0].duration,
+          resources: selectedPlan.subtopics[0].resource,
+          goals: selectedPlan.subtopics[0].goals,
+          exercises: selectedPlan.subtopics[0].exercises,
+          markAsCompleted: false // Default for template plans
         }
       : {
-          title: mainTitle,
-          duration: subTopics.reduce((total, topic) => total + (parseInt(topic.duration) || 0), 0) + " days",
-          subtopics: subTopics.map(sub => ({
-            name: sub.name,
-            description: sub.description,
-            duration: sub.duration,
-            resource: sub.resource,
-            goals: sub.goals,
-            exercises: sub.exercises
-          }))
+          planTitle: mainTitle,
+          subtopicName: subtopic.name,
+          description: subtopic.description,
+          duration: subtopic.duration,
+          resources: subtopic.resource,
+          goals: subtopic.goals,
+          exercises: subtopic.exercises,
+          markAsCompleted: subtopic.completed
         };
 
     try {
-      const response = await fetch('http://localhost:8080/api/plans', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8080/api/plans", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(planData),
-        mode: 'no-cors' // Add this to bypass CORS for development
+        body: JSON.stringify(planData)
       });
 
-      // Since mode is 'no-cors', we cannot check response.ok or access response.json()
-      console.log("Plan posted (no-cors mode, response not accessible)");
-      setOpenDialog(false);
-      setShowPreview(false);
-      setMainTitle("");
-      setSubTopics([{ id: 1, name: "", description: "", duration: "", resource: "", goals: "", exercises: "", completed: false }]);
+      if (response.ok) {
+        setSnackbarMessage("Plan posted successfully!");
+        setOpenSnackbar(true);
+        setOpenDialog(false);
+        setShowPreview(false);
+        setMainTitle("");
+        setSubtopic({
+          name: "",
+          description: "",
+          duration: "",
+          resource: "",
+          goals: "",
+          exercises: "",
+          completed: false
+        });
+        setSelectedPlan(null);
+        setErrors({});
+        fetchPlans(); // Refresh the plans list after posting
+      } else {
+        console.error("Failed to post plan:", response.statusText);
+      }
     } catch (error) {
       console.error("Error posting plan:", error);
     }
@@ -133,15 +159,13 @@ const LearningHomePage = () => {
       isValid = false;
     }
 
-    // Validate each subtopic
-    subTopics.forEach(topic => {
-      const fields = ["name", "description", "duration", "resource", "goals", "exercises"];
-      fields.forEach(field => {
-        if (!topic[field].trim()) {
-          newErrors[`${topic.id}-${field}`] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
-          isValid = false;
-        }
-      });
+    // Validate subtopic fields
+    const fields = ["name", "description", "duration", "resource", "goals", "exercises"];
+    fields.forEach(field => {
+      if (!subtopic[field].trim()) {
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+        isValid = false;
+      }
     });
 
     setErrors(newErrors);
@@ -154,6 +178,11 @@ const LearningHomePage = () => {
     }
   };
 
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+    setSnackbarMessage("");
+  };
+
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto", mt: 6, px: 4 }}>
       {/* Header Section */}
@@ -164,8 +193,8 @@ const LearningHomePage = () => {
           justifyContent: "space-between",
           flexWrap: "wrap",
           mb: 6,
-          background: "",
           p: 4,
+          boxShadow: 3,
           borderRadius: 3,
           boxShadow: "0 4px 12px rgba(255, 0, 0, 0.1)"
         }}
@@ -185,7 +214,6 @@ const LearningHomePage = () => {
             Inspire others with your progress and goals.
           </Typography>
         </Box>
-        
         <Button
           variant="contained"
           size="large"
@@ -202,6 +230,92 @@ const LearningHomePage = () => {
           Start Learning
         </Button>
         <LearningPost />
+      </Box>
+
+      {/* Display Retrieved Plans as Cards */}
+      <Box sx={{ mt: 6 }}>
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          sx={{ color: "#1a237e", mb: 3 }}
+        >
+          Your Learning Plans
+        </Typography>
+        <Grid container spacing={3}>
+          {plans.length > 0 ? (
+            plans.map((plan) => (
+              <Grid item xs={12} sm={6} md={4} key={plan.id}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    backgroundColor: "#e0e0e0",
+                    transition: "transform 0.2s",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    sx={{ color: "#1a237e", mb: 1 }}
+                  >
+                    {plan.planTitle}
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Typography variant="subtitle2" sx={{ color: "#37474f", mb: 1 }}>
+                    <strong>Subtopic:</strong> {plan.subtopicName}
+                  </Typography>
+                  <Typography sx={{ color: "#37474f", mb: 1 }}>
+                    <strong>Description:</strong> {plan.description}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Duration:</strong> {plan.duration}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Resources:</strong>{" "}
+                    {plan.resources ? (
+                      <a
+                        href={plan.resources}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#3f51b5", textDecoration: "underline" }}
+                      >
+                        {plan.resources}
+                      </a>
+                    ) : (
+                      "Not specified"
+                    )}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Goals:</strong> {plan.goals || "Not specified"}
+                  </Typography>
+                  <Typography sx={{ color: "#546e7a", mb: 1 }}>
+                    <strong>Exercises:</strong> {plan.exercises || "Not specified"}
+                  </Typography>
+                  <Chip
+                    label={plan.markAsCompleted ? "Completed" : "Not Completed"}
+                    color={plan.markAsCompleted ? "success" : "default"}
+                    size="small"
+                    sx={{
+                      mt: 1,
+                      backgroundColor: plan.markAsCompleted ? undefined : "#e8eaf6",
+                      color: plan.markAsCompleted ? undefined : "#3f51b5",
+                      fontWeight: "medium",
+                    }}
+                  />
+                </Paper>
+              </Grid>
+            ))
+          ) : (
+            <Typography sx={{ color: "#546e7a" }}>
+              No learning plans yet. Create one to get started!
+            </Typography>
+          )}
+        </Grid>
       </Box>
 
       {/* Dialog Modal */}
@@ -227,8 +341,8 @@ const LearningHomePage = () => {
           {showPreview && (
             <Typography variant="body2" sx={{ color: "#546e7a", mt: 1 }}>
               Total Duration: {selectedPlan
-                ? selectedPlan.duration
-                : subTopics.reduce((total, topic) => total + (parseInt(topic.duration) || 0), 0) + " days"}
+                ? selectedPlan.subtopics[0].duration
+                : (parseInt(subtopic.duration) || 0) + " days"}
             </Typography>
           )}
         </DialogTitle>
@@ -366,137 +480,120 @@ const LearningHomePage = () => {
                       error={!!errors.mainTitle}
                       helperText={errors.mainTitle}
                     />
-                    {subTopics.map((topic, index) => (
-                      <Paper
-                        key={topic.id}
-                        elevation={2}
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 3,
+                        mb: 3,
+                        borderRadius: 3,
+                        backgroundColor: "#fafafa"
+                      }}
+                    >
+                      <TextField
+                        label="Subtopic Name"
+                        variant="outlined"
+                        value={subtopic.name}
+                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        fullWidth
                         sx={{
-                          p: 3,
-                          mb: 3,
-                          borderRadius: 3,
-                          backgroundColor: "#fafafa"
+                          mb: 2,
+                          "& .MuiOutlinedInput-root": { borderRadius: 2 }
                         }}
-                      >
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          mb={2}
-                        >
+                        error={!!errors.name}
+                        helperText={errors.name}
+                      />
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
                           <TextField
-                            label="Subtopic Name"
+                            label="Description"
                             variant="outlined"
-                            value={topic.name}
-                            onChange={(e) => handleInputChange(topic.id, 'name', e.target.value)}
+                            multiline
+                            rows={3}
                             fullWidth
+                            value={subtopic.description}
+                            onChange={(e) => handleInputChange('description', e.target.value)}
                             sx={{
                               "& .MuiOutlinedInput-root": { borderRadius: 2 }
                             }}
-                            error={!!errors[`${topic.id}-name`]}
-                            helperText={errors[`${topic.id}-name`]}
+                            error={!!errors.description}
+                            helperText={errors.description}
                           />
-                          {subTopics.length > 1 && (
-                            <IconButton
-                              onClick={() => removeSubTopic(topic.id)}
-                              sx={{ color: "#ef5350", ml: 2 }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
-                        </Box>
-                        <Grid container spacing={2}>
-                          <Grid item xs={12}>
-                            <TextField
-                              label="Description"
-                              variant="outlined"
-                              multiline
-                              rows={3}
-                              fullWidth
-                              value={topic.description}
-                              onChange={(e) => handleInputChange(topic.id, 'description', e.target.value)}
-                              sx={{
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
-                              }}
-                              error={!!errors[`${topic.id}-description`]}
-                              helperText={errors[`${topic.id}-description`]}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              label="Duration (e.g., 5 days)"
-                              variant="outlined"
-                              fullWidth
-                              value={topic.duration}
-                              onChange={(e) => handleInputChange(topic.id, 'duration', e.target.value)}
-                              sx={{
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
-                              }}
-                              error={!!errors[`${topic.id}-duration`]}
-                              helperText={errors[`${topic.id}-duration`]}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <TextField
-                              label="Resource (YouTube/Article URL)"
-                              variant="outlined"
-                              fullWidth
-                              value={topic.resource}
-                              onChange={(e) => handleInputChange(topic.id, 'resource', e.target.value)}
-                              sx={{
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
-                              }}
-                              error={!!errors[`${topic.id}-resource`]}
-                              helperText={errors[`${topic.id}-resource`]}
-                            />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              label="Goals"
-                              variant="outlined"
-                              multiline
-                              rows={2}
-                              fullWidth
-                              value={topic.goals}
-                              onChange={(e) => handleInputChange(topic.id, 'goals', e.target.value)}
-                              sx={{
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
-                              }}
-                              error={!!errors[`${topic.id}-goals`]}
-                              helperText={errors[`${topic.id}-goals`]}
-                            />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              label="Exercises"
-                              variant="outlined"
-                              multiline
-                              rows={2}
-                              fullWidth
-                              value={topic.exercises}
-                              onChange={(e) => handleInputChange(topic.id, 'exercises', e.target.value)}
-                              sx={{
-                                "& .MuiOutlinedInput-root": { borderRadius: 2 }
-                              }}
-                              error={!!errors[`${topic.id}-exercises`]}
-                              helperText={errors[`${topic.id}-exercises`]}
-                            />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={topic.completed}
-                                  onChange={(e) => handleInputChange(topic.id, 'completed', e.target.checked)}
-                                  sx={{ color: "#3f51b5", '&.Mui-checked': { color: "#3f51b5" } }}
-                                />
-                              }
-                              label="Mark as Completed"
-                              sx={{ color: "#37474f" }}
-                            />
-                          </Grid>
                         </Grid>
-                      </Paper>
-                    ))}
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Duration (e.g., 5 days)"
+                            variant="outlined"
+                            fullWidth
+                            value={subtopic.duration}
+                            onChange={(e) => handleInputChange('duration', e.target.value)}
+                            sx={{
+                              "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                            }}
+                            error={!!errors.duration}
+                            helperText={errors.duration}
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Resource (YouTube/Article URL)"
+                            variant="outlined"
+                            fullWidth
+                            value={subtopic.resource}
+                            onChange={(e) => handleInputChange('resource', e.target.value)}
+                            sx={{
+                              "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                            }}
+                            error={!!errors.resource}
+                            helperText={errors.resource}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Goals"
+                            variant="outlined"
+                            multiline
+                            rows={2}
+                            fullWidth
+                            value={subtopic.goals}
+                            onChange={(e) => handleInputChange('goals', e.target.value)}
+                            sx={{
+                              "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                            }}
+                            error={!!errors.goals}
+                            helperText={errors.goals}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            label="Exercises"
+                            variant="outlined"
+                            multiline
+                            rows={2}
+                            fullWidth
+                            value={subtopic.exercises}
+                            onChange={(e) => handleInputChange('exercises', e.target.value)}
+                            sx={{
+                              "& .MuiOutlinedInput-root": { borderRadius: 2 }
+                            }}
+                            error={!!errors.exercises}
+                            helperText={errors.exercises}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={subtopic.completed}
+                                onChange={(e) => handleInputChange('completed', e.target.checked)}
+                                sx={{ color: "#3f51b5", '&.Mui-checked': { color: "#3f51b5" } }}
+                              />
+                            }
+                            label="Mark as Completed"
+                            sx={{ color: "#37474f" }}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Paper>
                     <Box display="flex" justifyContent="space-between" mt={3}>
                       <Button
                         variant="outlined"
@@ -511,33 +608,18 @@ const LearningHomePage = () => {
                       >
                         Preview Plan
                       </Button>
-                      <Box>
-                        <Button
-                          variant="contained"
-                          sx={{
-                            backgroundColor: "#4caf50",
-                            "&:hover": { backgroundColor: "#388e3c" },
-                            borderRadius: 2,
-                            px: 4,
-                            mr: 2
-                          }}
-                          onClick={handlePostPlan}
-                        >
-                          Post Plan
-                        </Button>
-                        <Button
-                          variant="contained"
-                          sx={{
-                            backgroundColor: "#3f51b5",
-                            "&:hover": { backgroundColor: "#303f9f" },
-                            borderRadius: 2,
-                            px: 4
-                          }}
-                          onClick={addSubTopic}
-                        >
-                          Add Subtopic
-                        </Button>
-                      </Box>
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: "#4caf50",
+                          "&:hover": { backgroundColor: "#388e3c" },
+                          borderRadius: 2,
+                          px: 4
+                        }}
+                        onClick={handlePostPlan}
+                      >
+                        Post Plan
+                      </Button>
                     </Box>
                   </Box>
                 )}
@@ -545,7 +627,7 @@ const LearningHomePage = () => {
             </>
           ) : (
             <Box>
-              {(selectedPlan ? selectedPlan.subtopics : subTopics).map((topic, idx) => (
+              {(selectedPlan ? selectedPlan.subtopics : [subtopic]).map((topic, idx) => (
                 <Paper
                   key={idx}
                   elevation={2}
@@ -659,6 +741,18 @@ const LearningHomePage = () => {
           )}
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for Success Alert */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
