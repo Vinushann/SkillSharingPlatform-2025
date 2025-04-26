@@ -1,37 +1,33 @@
+
 package com.skillshare.skillshare_platform.controller;
 
-import com.skillshare.skillshare_platform.dto.LearningPlanRequest;
-import com.skillshare.skillshare_platform.dto.LearningPlanResponse;
 import com.skillshare.skillshare_platform.entity.LearningPlan;
 import com.skillshare.skillshare_platform.service.LearningPlanService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/learning-plans")
-@RequiredArgsConstructor
+@RequestMapping("/api/plans")
+@CrossOrigin(origins = "http://localhost:3000") // Allow CORS for frontend
 public class LearningPlanController {
-    //Create LearningPlanController with POST and GET endpoints
 
-    private final LearningPlanService service;
+    @Autowired
+    private LearningPlanService service;
 
+    // POST endpoint to save a learning plan
     @PostMapping
-    public ResponseEntity<LearningPlan> createPlan(@RequestBody LearningPlanRequest request) {
-        LearningPlan saved = service.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    public ResponseEntity<LearningPlan> savePlan(@RequestBody LearningPlan plan) {
+        LearningPlan savedPlan = service.savePlan(plan);
+        return ResponseEntity.ok(savedPlan);
     }
 
+    // GET endpoint to retrieve all learning plans
     @GetMapping
-    public ResponseEntity<List<LearningPlanResponse>> getAllPlans() {
-        return ResponseEntity.ok(service.getAllAsDto());
+    public ResponseEntity<List<LearningPlan>> getAllPlans() {
+        List<LearningPlan> plans = service.getAllPlans();
+        return ResponseEntity.ok(plans);
     }
-    @GetMapping("/templates")
-    public ResponseEntity<List<LearningPlanResponse>> getTemplates() {
-        return ResponseEntity.ok(service.getAllTemplates());
-    }
-
 }
