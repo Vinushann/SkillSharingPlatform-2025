@@ -13,6 +13,7 @@ import {
   TextField,
   InputAdornment
 } from "@mui/material";
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchIcon from "@mui/icons-material/Search";
 
@@ -105,8 +106,14 @@ const MainLayout = () => {
           {/* User Actions */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton>
-              <NotificationsIcon sx={{ color: "#3f51b5" }} />
+              <NotificationsIcon
+                sx={{ color: "#3f51b5" }} />
             </IconButton>
+            
+            <IconButton> 
+              <NoteAddIcon sx={{color: "green"}}> </NoteAddIcon>
+            </IconButton>
+            
             <Avatar
               sx={{
                 bgcolor: "#3f51b5",
@@ -118,6 +125,7 @@ const MainLayout = () => {
             >
               U
             </Avatar>
+
             <Menu
               anchorEl={anchorEl}
               open={open}
