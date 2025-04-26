@@ -92,82 +92,82 @@ const learningPlans = [
         }
       ]
     },
-    {
-      title: "DevOps Essentials",
-      duration: "2 weeks",
-      subtopics: [
-        {
-          name: "Git Fundamentals",
-          description: "Learn version control with Git for collaborative development.",
-          duration: "3 days",
-          resource: "https://www.youtube.com/watch?v=RGOj5yH7evk",
-          goals: "Master Git commands like commit, push, and pull.",
-          exercises: "Set up a repository and collaborate on a project."
-        },
-        {
-          name: "Docker Basics",
-          description: "Containerize applications using Docker.",
-          duration: "4 days",
-          resource: "https://www.youtube.com/watch?v=fqMOX6JJhGo",
-          goals: "Understand Docker images, containers, and Dockerfile.",
-          exercises: "Containerize a simple Node.js app."
-        },
-        {
-          name: "CI/CD Pipelines",
-          description: "Implement continuous integration and deployment pipelines.",
-          duration: "4 days",
-          resource: "https://www.youtube.com/watch?v=scEDHsr3APg",
-          goals: "Set up a CI/CD pipeline using GitHub Actions.",
-          exercises: "Automate testing and deployment for a project."
-        },
-        {
-          name: "Linux Basics for DevOps",
-          description: "Learn essential Linux commands for server management.",
-          duration: "3 days",
-          resource: "https://www.youtube.com/watch?v=2s7i9j6UYyM",
-          goals: "Navigate the Linux filesystem and manage processes.",
-          exercises: "Write a shell script to automate a task."
-        }
-      ]
-    },
-    {
-      title: "UI/UX Crash Course",
-      duration: "2 weeks",
-      subtopics: [
-        {
-          name: "Figma Basics",
-          description: "Design user interfaces with Figma for prototyping.",
-          duration: "4 days",
-          resource: "https://www.youtube.com/watch?v=3q3FV65ZrUs",
-          goals: "Learn Figma’s interface and prototyping tools.",
-          exercises: "Design a mobile app landing page in Figma."
-        },
-        {
-          name: "Design Systems",
-          description: "Create reusable design systems for consistent UI development.",
-          duration: "3 days",
-          resource: "https://www.youtube.com/watch?v=HrNNT5d2ZuQ",
-          goals: "Understand components, styles, and tokens.",
-          exercises: "Build a design system with buttons and typography."
-        },
-        {
-          name: "Accessibility Standards",
-          description: "Ensure designs are accessible to all users.",
-          duration: "3 days",
-          resource: "https://www.youtube.com/watch?v=cOmehxAU_4s",
-          goals: "Learn WCAG guidelines and accessibility testing.",
-          exercises: "Audit a webpage for accessibility issues."
-        },
-        {
-          name: "User Research",
-          description: "Conduct user research to inform design decisions.",
-          duration: "3 days",
-          resource: "https://www.youtube.com/watch?v=2zL1oHNG4IA",
-          goals: "Learn how to create user personas and conduct interviews.",
-          exercises: "Create a user persona for a sample app."
-        }
-      ]
-    }
+    // {
+    //   title: "DevOps Essentials",
+    //   duration: "2 weeks",
+    //   subtopics: [
+    //     {
+    //       name: "Git Fundamentals",
+    //       description: "Learn version control with Git for collaborative development.",
+    //       duration: "3 days",
+    //       resource: "https://www.youtube.com/watch?v=RGOj5yH7evk",
+    //       goals: "Master Git commands like commit, push, and pull.",
+    //       exercises: "Set up a repository and collaborate on a project."
+    //     },
+    //     {
+    //       name: "Docker Basics",
+    //       description: "Containerize applications using Docker.",
+    //       duration: "4 days",
+    //       resource: "https://www.youtube.com/watch?v=fqMOX6JJhGo",
+    //       goals: "Understand Docker images, containers, and Dockerfile.",
+    //       exercises: "Containerize a simple Node.js app."
+    //     },
+    //     {
+    //       name: "CI/CD Pipelines",
+    //       description: "Implement continuous integration and deployment pipelines.",
+    //       duration: "4 days",
+    //       resource: "https://www.youtube.com/watch?v=scEDHsr3APg",
+    //       goals: "Set up a CI/CD pipeline using GitHub Actions.",
+    //       exercises: "Automate testing and deployment for a project."
+    //     },
+    //     {
+    //       name: "Linux Basics for DevOps",
+    //       description: "Learn essential Linux commands for server management.",
+    //       duration: "3 days",
+    //       resource: "https://www.youtube.com/watch?v=2s7i9j6UYyM",
+    //       goals: "Navigate the Linux filesystem and manage processes.",
+    //       exercises: "Write a shell script to automate a task."
+    //     }
+    //   ]
+    // },
+    // {
+    //   title: "UI/UX Crash Course",
+    //   duration: "2 weeks",
+    //   subtopics: [
+    //     {
+    //       name: "Figma Basics",
+    //       description: "Design user interfaces with Figma for prototyping.",
+    //       duration: "4 days",
+    //       resource: "https://www.youtube.com/watch?v=3q3FV65ZrUs",
+    //       goals: "Learn Figma’s interface and prototyping tools.",
+    //       exercises: "Design a mobile app landing page in Figma."
+    //     },
+    //     {
+    //       name: "Design Systems",
+    //       description: "Create reusable design systems for consistent UI development.",
+    //       duration: "3 days",
+    //       resource: "https://www.youtube.com/watch?v=HrNNT5d2ZuQ",
+    //       goals: "Understand components, styles, and tokens.",
+    //       exercises: "Build a design system with buttons and typography."
+    //     },
+    //     {
+    //       name: "Accessibility Standards",
+    //       description: "Ensure designs are accessible to all users.",
+    //       duration: "3 days",
+    //       resource: "https://www.youtube.com/watch?v=cOmehxAU_4s",
+    //       goals: "Learn WCAG guidelines and accessibility testing.",
+    //       exercises: "Audit a webpage for accessibility issues."
+    //     },
+    //     {
+    //       name: "User Research",
+    //       description: "Conduct user research to inform design decisions.",
+    //       duration: "3 days",
+    //       resource: "https://www.youtube.com/watch?v=2zL1oHNG4IA",
+    //       goals: "Learn how to create user personas and conduct interviews.",
+    //       exercises: "Create a user persona for a sample app."
+    //     }
+    //   ]
+    // }
   ];
   
   export default learningPlans;
