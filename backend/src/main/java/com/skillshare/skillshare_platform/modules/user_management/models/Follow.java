@@ -5,7 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.Date;
 
 @Entity
-@Table(name = "follows")
+@Table(name = "followss")
 public class Follow {
 
     @Id

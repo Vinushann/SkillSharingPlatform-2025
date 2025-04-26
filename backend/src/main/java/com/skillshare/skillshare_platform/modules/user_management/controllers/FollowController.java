@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/follows")
@@ -19,16 +20,23 @@ public class FollowController {
 
     @Autowired
     private AppUserRepository userRepository;
-
+//whre is the rest of the code?
     // Follow a user
     @PostMapping("{userId}")
-    public ResponseEntity<FollowDTOs.FollowResponse> followUser(
+    public ResponseEntity<?> followUser(
             @RequestBody FollowDTOs.FollowRequest request,
             @PathVariable String userId
     ) {
-        AppUser currentUser = userRepository.getById(userId);
-        FollowDTOs.FollowResponse response = followService.followUser(request.getFollowingId(), currentUser);
-        return ResponseEntity.ok(response);
+        Optional<AppUser> currentUser = userRepository.findById(userId);
+        if (currentUser.isPresent()) {
+            System.out.println(currentUser);
+            FollowDTOs.FollowResponse response = followService.followUser(request.getFollowingId(), currentUser.get());
+            return ResponseEntity.ok(response);
+        }else{
+
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
     // Unfollow a user
