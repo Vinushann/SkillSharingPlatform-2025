@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import learningPlans from "../components/learningPlans";
+import LearningPost from "../components/LearningPost";
 
 const LearningHomePage = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -71,24 +72,52 @@ const LearningHomePage = () => {
   };
 
   const handlePostPlan = async () => {
-    if (!selectedPlan) return;
+    // Validate the form before posting
+    if (!validateForm()) return;
 
-    const planData = {
-      title: selectedPlan.title,
-      duration: selectedPlan.duration,
-      subtopics: selectedPlan.subtopics.map(sub => ({
-        name: sub.name,
-        description: sub.description,
-        duration: sub.duration,
-        resource: sub.resource,
-        goals: sub.goals,
-        exercises: sub.exercises
-      }))
-    };
+    // Prepare the plan data based on whether it's a template plan or a custom plan
+    const planData = selectedPlan
+      ? {
+          title: selectedPlan.title,
+          duration: selectedPlan.duration,
+          subtopics: selectedPlan.subtopics.map(sub => ({
+            name: sub.name,
+            description: sub.description,
+            duration: sub.duration,
+            resource: sub.resource,
+            goals: sub.goals,
+            exercises: sub.exercises
+          }))
+        }
+      : {
+          title: mainTitle,
+          duration: subTopics.reduce((total, topic) => total + (parseInt(topic.duration) || 0), 0) + " days",
+          subtopics: subTopics.map(sub => ({
+            name: sub.name,
+            description: sub.description,
+            duration: sub.duration,
+            resource: sub.resource,
+            goals: sub.goals,
+            exercises: sub.exercises
+          }))
+        };
 
     try {
-      console.log("Posting plan to backend:", planData);
+      const response = await fetch('http://localhost:8080/api/plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(planData),
+        mode: 'no-cors' // Add this to bypass CORS for development
+      });
+
+      // Since mode is 'no-cors', we cannot check response.ok or access response.json()
+      console.log("Plan posted (no-cors mode, response not accessible)");
       setOpenDialog(false);
+      setShowPreview(false);
+      setMainTitle("");
+      setSubTopics([{ id: 1, name: "", description: "", duration: "", resource: "", goals: "", exercises: "", completed: false }]);
     } catch (error) {
       console.error("Error posting plan:", error);
     }
@@ -135,10 +164,10 @@ const LearningHomePage = () => {
           justifyContent: "space-between",
           flexWrap: "wrap",
           mb: 6,
-          background: "#e3f2fd",
+          background: "",
           p: 4,
           borderRadius: 3,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+          boxShadow: "0 4px 12px rgba(255, 0, 0, 0.1)"
         }}
       >
         <Box>
@@ -156,6 +185,7 @@ const LearningHomePage = () => {
             Inspire others with your progress and goals.
           </Typography>
         </Box>
+        
         <Button
           variant="contained"
           size="large"
@@ -171,6 +201,7 @@ const LearningHomePage = () => {
         >
           Start Learning
         </Button>
+        <LearningPost />
       </Box>
 
       {/* Dialog Modal */}
@@ -480,18 +511,33 @@ const LearningHomePage = () => {
                       >
                         Preview Plan
                       </Button>
-                      <Button
-                        variant="contained"
-                        sx={{
-                          backgroundColor: "#3f51b5",
-                          "&:hover": { backgroundColor: "#303f9f" },
-                          borderRadius: 2,
-                          px: 4
-                        }}
-                        onClick={addSubTopic}
-                      >
-                        Add Subtopic
-                      </Button>
+                      <Box>
+                        <Button
+                          variant="contained"
+                          sx={{
+                            backgroundColor: "#4caf50",
+                            "&:hover": { backgroundColor: "#388e3c" },
+                            borderRadius: 2,
+                            px: 4,
+                            mr: 2
+                          }}
+                          onClick={handlePostPlan}
+                        >
+                          Post Plan
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{
+                            backgroundColor: "#3f51b5",
+                            "&:hover": { backgroundColor: "#303f9f" },
+                            borderRadius: 2,
+                            px: 4
+                          }}
+                          onClick={addSubTopic}
+                        >
+                          Add Subtopic
+                        </Button>
+                      </Box>
                     </Box>
                   </Box>
                 )}
@@ -586,20 +632,18 @@ const LearningHomePage = () => {
               >
                 Back to Edit
               </Button>
-              {selectedPlan && (
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#4caf50",
-                    "&:hover": { backgroundColor: "#388e3c" },
-                    borderRadius: 2,
-                    px: 4
-                  }}
-                  onClick={handlePostPlan}
-                >
-                  Post Plan
-                </Button>
-              )}
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#4caf50",
+                  "&:hover": { backgroundColor: "#388e3c" },
+                  borderRadius: 2,
+                  px: 4
+                }}
+                onClick={handlePostPlan}
+              >
+                Post Plan
+              </Button>
             </>
           ) : (
             <Button
