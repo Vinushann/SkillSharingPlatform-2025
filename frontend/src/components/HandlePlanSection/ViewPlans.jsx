@@ -67,10 +67,6 @@ const ViewPlans = () => {
 
   return (
     <Box p={4}>
-      <Typography variant="h4" mb={3} fontWeight="bold">
-        All Learning Plans
-      </Typography>
-
       {plans.map((plan, index) => (
         <Card key={index} sx={{ mb: 4, boxShadow: 3, borderRadius: 3 }}>
           <CardContent>
