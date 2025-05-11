@@ -29,7 +29,8 @@ const LearningHomePage = () => {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <LearningHomeHeader />
       <ViewPlans />
-    /</Container>
+      <Typography> hi</Typography>
+    </Container>
   );
 };
 

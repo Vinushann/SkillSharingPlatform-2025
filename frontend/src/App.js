@@ -1,8 +1,10 @@
 import React from "react";
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "./components/MainLayout";
 import HomePage from "./pages/HomePage";
 import LearningHomePage from "./pages/LearningHomePage";
+
 // theme - 1
 import { createTheme, ThemeProvider, CssBaseline, Box } from "@mui/material";
 import CreatePlanRoot from "./components/HandlePlanSection/CreatePlanRoot";

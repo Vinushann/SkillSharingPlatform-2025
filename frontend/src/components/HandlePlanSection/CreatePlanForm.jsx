@@ -9,6 +9,7 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
+import { generateLearningPlan } from "../../services/geminiService";
 
 const CreatePlanForm = ({ onFormDataChange }) => {
   const [mainTitle, setMainTitle] = useState("");
@@ -98,6 +99,34 @@ const CreatePlanForm = ({ onFormDataChange }) => {
         value={mainTitle}
         onChange={(e) => setMainTitle(e.target.value)}
       />
+      <Button
+        variant="outlined"
+        color="primary"
+        sx={{ mt: 1, mb: 3 }}
+        onClick={async () => {
+          if (!mainTitle.trim()) {
+            alert("Enter a main title first!");
+            return;
+          }
+          try {
+            const planJson = await generateLearningPlan(mainTitle);
+            const parsed = JSON.parse(planJson);
+            setSubtopics(
+              parsed.map((item) => ({
+                name: item.subtopic || item.subtopic_name || "",
+                duration: item.duration || "",
+                resource: item.resource || "",
+                completed: false,
+              }))
+            );
+          } catch (err) {
+            alert("Failed to fetch AI plan.");
+            console.error("AI Error:", err);
+          }
+        }}
+      >
+        Generate Plan with AI
+      </Button>
 
       {subtopics.map((sub, i) => (
         <Box key={i} sx={{ mb: 4 }}>
