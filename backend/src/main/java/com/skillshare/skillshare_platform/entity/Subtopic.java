@@ -1,6 +1,7 @@
 package com.skillshare.skillshare_platform.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 @Embeddable
 public class Subtopic {

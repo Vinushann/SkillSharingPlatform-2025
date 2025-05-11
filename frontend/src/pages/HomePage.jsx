@@ -7,7 +7,8 @@ import {
   Paper,
   Avatar,
   Divider,
-  IconButton
+  IconButton,
+  Container,
 } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import { Link } from "react-router-dom";
@@ -15,20 +16,28 @@ import { Link } from "react-router-dom";
 const HomePage = () => {
   // Mock data for activity feed
   const activities = [
-    { user: "Alex", action: "started a new learning plan: Frontend Development", time: "2h ago" },
+    {
+      user: "Alex",
+      action: "started a new learning plan: Frontend Development",
+      time: "2h ago",
+    },
     { user: "Sara", action: "completed AI for Starters", time: "5h ago" },
-    { user: "Mike", action: "shared a learning plan: DevOps Essentials", time: "1d ago" }
+    {
+      user: "Mike",
+      action: "shared a learning plan: DevOps Essentials",
+      time: "1d ago",
+    },
   ];
 
   // Mock data for follow suggestions
   const suggestions = [
     { name: "John Doe", role: "Frontend Developer" },
     { name: "Emily Smith", role: "Data Scientist" },
-    { name: "Liam Brown", role: "DevOps Engineer" }
+    { name: "Liam Brown", role: "DevOps Engineer" },
   ];
 
   return (
-    <Box sx={{ maxWidth: "1200px", mx: "auto", mt: 4, px: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
       {/* Hero Section */}
       <Box
         sx={{
@@ -37,7 +46,7 @@ const HomePage = () => {
           borderRadius: 3,
           textAlign: "center",
           mb: 6,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
         <Typography
@@ -47,12 +56,14 @@ const HomePage = () => {
         >
           Welcome to Skill Share!
         </Typography>
+
         <Typography
           variant="body1"
           sx={{ color: "#37474f", mb: 3, fontSize: "1.1rem" }}
         >
           Start your journey by creating or following a learning plan.
         </Typography>
+
         <Box display="flex" justifyContent="center" gap={2}>
           <Button
             variant="contained"
@@ -64,16 +75,17 @@ const HomePage = () => {
               borderRadius: 2,
               px: 4,
               py: 1.5,
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
             Start Learning
           </Button>
+
           <IconButton
             sx={{
               backgroundColor: "#3f51b5",
               color: "white",
-              "&:hover": { backgroundColor: "#303f9f" }
+              "&:hover": { backgroundColor: "#303f9f" },
             }}
             onClick={() => alert("Share functionality coming soon!")} // Placeholder for share action
           >
@@ -102,7 +114,7 @@ const HomePage = () => {
                 mb: 2,
                 borderRadius: 3,
                 backgroundColor: "#ffffff",
-                border: "1px solid #e0e0e0"
+                border: "1px solid #e0e0e0",
               }}
             >
               <Box display="flex" alignItems="center" gap={2}>
@@ -135,7 +147,7 @@ const HomePage = () => {
               p: 3,
               borderRadius: 3,
               backgroundColor: "#ffffff",
-              border: "1px solid #e0e0e0"
+              border: "1px solid #e0e0e0",
             }}
           >
             {suggestions.map((user, idx) => (
@@ -157,9 +169,11 @@ const HomePage = () => {
                       borderColor: "#3f51b5",
                       color: "#3f51b5",
                       borderRadius: 2,
-                      "&:hover": { borderColor: "#303f9f", color: "#303f9f" }
+                      "&:hover": { borderColor: "#303f9f", color: "#303f9f" },
                     }}
-                    onClick={() => alert(`Follow ${user.name} functionality coming soon!`)} // Placeholder
+                    onClick={() =>
+                      alert(`Follow ${user.name} functionality coming soon!`)
+                    } // Placeholder
                   >
                     Follow
                   </Button>
@@ -170,7 +184,7 @@ const HomePage = () => {
           </Paper>
         </Grid>
       </Grid>
-    </Box>
+    </Container>
   );
 };
 
