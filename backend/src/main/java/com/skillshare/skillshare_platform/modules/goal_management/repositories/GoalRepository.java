@@ -1,6 +1,5 @@
 package com.skillshare.skillshare_platform.modules.goal_management.repositories;
 
-
 import com.skillshare.skillshare_platform.modules.goal_management.models.Goal;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

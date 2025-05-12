@@ -5,15 +5,12 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.Date;
 
 @Entity
-@Table(name = "followss")
+@Table(name = "follows")
 public class Follow {
 
     @Id
     @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", updatable = false, nullable = false)
     private String id;
 

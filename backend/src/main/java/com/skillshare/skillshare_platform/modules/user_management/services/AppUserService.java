@@ -1,6 +1,5 @@
 package com.skillshare.skillshare_platform.modules.user_management.services;
 
-
 import com.skillshare.skillshare_platform.modules.user_management.dtos.AccountDeactivationDTO;
 import com.skillshare.skillshare_platform.modules.user_management.dtos.AppUserDTO;
 import com.skillshare.skillshare_platform.modules.user_management.dtos.UserProfileDTO;
@@ -23,16 +22,13 @@ public class AppUserService {
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     @Autowired
     public AppUserService(AppUserRepository appUserRepository,
-                          PasswordEncoder passwordEncoder
-    ) {
+            PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
 
     }
-
 
     public AppUser createUser(AppUserDTO appUserDTO) {
         // Check if username or email already exists
@@ -115,6 +111,7 @@ public class AppUserService {
                     return false;
                 }).orElse(false);
     }
+
     public UserProfileDTO deactivateAccount(String userId, AccountDeactivationDTO deactivationDTO) {
         return appUserRepository.findById(userId)
                 .map(user -> {
@@ -128,8 +125,9 @@ public class AppUserService {
                 })
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
     }
+
     private UserProfileDTO convertToUserProfileDTO(AppUser user) {
-        System.out.println("======= "+user.getProfileImageUrl());
+        System.out.println("======= " + user.getProfileImageUrl());
         UserProfileDTO dto = new UserProfileDTO();
         dto.setId(user.getId());
         dto.setFirstName(user.getFirstName());

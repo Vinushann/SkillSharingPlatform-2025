@@ -1,5 +1,7 @@
 package com.skillshare.skillshare_platform.modules.user_management.dtos;
+
 import java.util.Date;
+
 public class AppUserDTO {
     private String firstName;
     private String lastName;
@@ -116,4 +118,3 @@ public class AppUserDTO {
         this.birthday = birthday;
     }
 }
-

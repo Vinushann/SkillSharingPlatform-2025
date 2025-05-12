@@ -1,12 +1,12 @@
 package com.skillshare.skillshare_platform.security;
 
-
 public class JwtAuthResponse {
     private String token;
     private String userId;
 
     // Constructors
-    public JwtAuthResponse() {}
+    public JwtAuthResponse() {
+    }
 
     public JwtAuthResponse(String token, String userId) {
         this.token = token;

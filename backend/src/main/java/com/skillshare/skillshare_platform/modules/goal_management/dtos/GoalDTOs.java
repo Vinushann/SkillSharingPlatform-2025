@@ -1,4 +1,5 @@
 package com.skillshare.skillshare_platform.modules.goal_management.dtos;
+
 import com.skillshare.skillshare_platform.modules.goal_management.models.GoalStatus;
 
 import java.util.Date;
@@ -9,7 +10,7 @@ public class GoalDTOs {
     public static class GoalRequest {
         private String description;
         private Date targetDate;
-        private GoalStatus status;  // Added nullable status field
+        private GoalStatus status; // Added nullable status field
 
         // Getters and Setters
         public String getDescription() {
@@ -37,7 +38,6 @@ public class GoalDTOs {
             this.status = status;
         }
     }
-
 
     // Response DTO for a goal
     public static class GoalResponse {

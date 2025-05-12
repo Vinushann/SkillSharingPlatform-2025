@@ -1,7 +1,5 @@
 package com.skillshare.skillshare_platform.modules.goal_management.models;
 
-
-
 import com.skillshare.skillshare_platform.modules.user_management.models.AppUser;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -13,10 +11,7 @@ public class Goal {
 
     @Id
     @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", updatable = false, nullable = false)
     private String id;
 
@@ -112,5 +107,3 @@ public class Goal {
         this.updatedAt = updatedAt;
     }
 }
-
-

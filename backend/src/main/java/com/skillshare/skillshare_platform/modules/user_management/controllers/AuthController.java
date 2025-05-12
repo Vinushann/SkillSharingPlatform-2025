@@ -32,7 +32,7 @@ public class AuthController {
     private final JwtTokenProvider tokenProvider;
 
     public AuthController(AuthenticationManager authenticationManager,
-                          JwtTokenProvider tokenProvider) {
+            JwtTokenProvider tokenProvider) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
     }
@@ -42,24 +42,22 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(),
-                        loginDto.getPassword()
-                )
-        );
+                        loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = tokenProvider.generateToken(authentication);
 
-        Optional<AppUser> user= userRepository.findByUsername(loginDto.getUsername());
+        Optional<AppUser> user = userRepository.findByUsername(loginDto.getUsername());
 
-        if(user.isEmpty()) return ResponseEntity.ok(new JwtAuthResponse(token, ""));
+        if (user.isEmpty())
+            return ResponseEntity.ok(new JwtAuthResponse(token, ""));
 
         AppUser u = user.get();
         if (isAccountDeactivated(u)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Your account is deactivated. Please try again later.");
         }
-
 
         return ResponseEntity.ok(new JwtAuthResponse(token, user.get().getId()));
     }
@@ -105,6 +103,7 @@ public class AuthController {
 
         return ResponseEntity.ok(userDto);
     }
+
     private boolean isAccountDeactivated(AppUser user) {
         if (!user.isDeactivateStatus()) {
             return false;

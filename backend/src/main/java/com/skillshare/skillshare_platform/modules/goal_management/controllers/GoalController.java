@@ -24,17 +24,15 @@ public class GoalController {
     @PostMapping("/{userId}")
     public ResponseEntity<GoalDTOs.GoalResponse> createGoal(
             @RequestBody GoalDTOs.GoalRequest request,
-            @PathVariable String userId
-    ) {
-        AppUser currentUser= userRepository.getById(userId);
+            @PathVariable String userId) {
+        AppUser currentUser = userRepository.getById(userId);
         GoalDTOs.GoalResponse response = goalService.createGoal(request, currentUser);
         return ResponseEntity.ok(response);
     }
 
     // Get all goals for the current user
     @GetMapping("/{userId}")
-    public ResponseEntity<List<GoalDTOs.GoalResponse>> getAllGoals( @PathVariable String userId
-    ) {
+    public ResponseEntity<List<GoalDTOs.GoalResponse>> getAllGoals(@PathVariable String userId) {
 
         List<GoalDTOs.GoalResponse> goals = goalService.getAllGoalsForUser(userId);
         return ResponseEntity.ok(goals);
@@ -44,8 +42,7 @@ public class GoalController {
     @GetMapping("/{goalId}/{userId}")
     public ResponseEntity<GoalDTOs.GoalResponse> getGoalById(
             @PathVariable String goalId,
-            @PathVariable String userId
-    ) {
+            @PathVariable String userId) {
 
         GoalDTOs.GoalResponse response = goalService.getGoalById(goalId, userId);
         return ResponseEntity.ok(response);
@@ -56,8 +53,7 @@ public class GoalController {
     public ResponseEntity<GoalDTOs.GoalResponse> updateGoal(
             @PathVariable String goalId,
             @RequestBody GoalDTOs.GoalRequest request,
-            @PathVariable String userId
-    ) {
+            @PathVariable String userId) {
 
         GoalDTOs.GoalResponse response = goalService.updateGoal(goalId, request, userId);
         return ResponseEntity.ok(response);
@@ -67,10 +63,9 @@ public class GoalController {
     @DeleteMapping("/{goalId}/{userId}")
     public ResponseEntity<String> deleteGoal(
             @PathVariable String goalId,
-            @PathVariable String userId
-    ) {
+            @PathVariable String userId) {
 
-        goalService.deleteGoal(goalId,  userId);
+        goalService.deleteGoal(goalId, userId);
         return ResponseEntity.ok("Goal deleted successfully.");
     }
 }

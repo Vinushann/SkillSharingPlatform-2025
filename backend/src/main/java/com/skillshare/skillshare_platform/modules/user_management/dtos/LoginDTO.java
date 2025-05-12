@@ -1,6 +1,5 @@
 package com.skillshare.skillshare_platform.modules.user_management.dtos;
 
-
 public class LoginDTO {
     private String username;
     private String password;

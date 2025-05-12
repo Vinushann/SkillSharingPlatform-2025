@@ -41,6 +41,7 @@ public class UserProfileDTO {
     private String gender;
     private String address;
     private Date birthday;
+
     // Getters and Setters
     public String getId() {
         return id;

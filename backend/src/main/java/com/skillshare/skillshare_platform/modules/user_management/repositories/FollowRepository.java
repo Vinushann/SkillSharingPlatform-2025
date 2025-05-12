@@ -31,5 +31,4 @@ public interface FollowRepository extends JpaRepository<Follow, String> {
     // Count followings for a user
     long countByFollowerId(String followerId);
 
-
 }

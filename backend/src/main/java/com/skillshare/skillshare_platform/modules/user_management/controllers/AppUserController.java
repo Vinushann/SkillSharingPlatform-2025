@@ -1,7 +1,5 @@
 package com.skillshare.skillshare_platform.modules.user_management.controllers;
 
-
-
 import com.skillshare.skillshare_platform.modules.user_management.dtos.AccountDeactivationDTO;
 import com.skillshare.skillshare_platform.modules.user_management.dtos.AppUserDTO;
 import com.skillshare.skillshare_platform.modules.user_management.dtos.UserProfileDTO;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @RestController
 @RequestMapping("/api/users")
@@ -30,8 +27,6 @@ public class AppUserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
 
     @GetMapping
     public ResponseEntity<List<UserProfileDTO>> getAllUsers() {
