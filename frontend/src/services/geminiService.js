@@ -35,7 +35,7 @@ export const generateLearningPlan = async (userTopic) => {
   For each step, give:
   - Subtopic name
   - Estimated duration (e.g., 2 days)
-  - A YouTube or article link (real or mock)
+  - A YouTube link (should provide me only acitve video and famous video about that section)
   - Mark as completed: false
 
   Format the entire output as pure JSON (not Markdown, no \`\`\`), like this:
