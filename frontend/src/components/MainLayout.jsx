@@ -1,4 +1,5 @@
 import React from "react";
+import HeaderComponent from "./HeaderComponent";
 import { Outlet, Link } from "react-router-dom";
 import {
   AppBar,
@@ -34,14 +35,15 @@ const MainLayout = () => {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {/* <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton>
               <NotificationsIcon />
             </IconButton>
             <Button variant="contained" color="primary">
               Login
             </Button>
-          </Box>
+          </Box> */}
+          <HeaderComponent userId={1} />
         </Toolbar>
       </AppBar>
 

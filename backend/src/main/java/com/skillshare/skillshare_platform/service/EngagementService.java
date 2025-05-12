@@ -3,6 +3,7 @@ package com.skillshare.skillshare_platform.service;
 import com.skillshare.skillshare_platform.dto.CommentRequestDto;
 import com.skillshare.skillshare_platform.dto.CommentResponseDto;
 import com.skillshare.skillshare_platform.dto.NotificationResponseDto;
+import com.skillshare.skillshare_platform.entity.SkillPost;
 import com.skillshare.skillshare_platform.exception.ResourceConflictException;
 import com.skillshare.skillshare_platform.exception.ResourceNotFoundException;
 import com.skillshare.skillshare_platform.entity.*;
@@ -150,5 +151,12 @@ public class EngagementService {
         dto.setCreatedAt(comment.getCreatedAt());
         dto.setUpdatedAt(comment.getUpdatedAt());
         return dto;
+    }
+
+    // New method to fetch post author ID
+    public Long getPostAuthorId(Long postId) {
+        SkillPost post = skillPostRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
+        return post.getUser().getId(); // Get the user ID from the User entity
     }
 }
