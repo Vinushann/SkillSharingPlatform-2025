@@ -4,7 +4,7 @@ import CreatePlanForm from "./CreatePlanForm";
 import UseTemplate from "./UseTemplate";
 import PreviewPlanSub from "./PreviewPlanSub";
 
-// Define interface for plan data
+// ✅ Define the type for planData (should match CreatePlanForm payload)
 interface PlanData {
   mainTitle: string;
   sub1Name: string;
@@ -33,7 +33,7 @@ const CreatePlanRoot: React.FC = () => {
   const [planData, setPlanData] = useState<PlanData | null>(null);
 
   // 🔄 Handle tab switching
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number): void => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
     setPlanData(null); // Reset preview on tab switch
   };

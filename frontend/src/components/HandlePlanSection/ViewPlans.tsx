@@ -1,200 +1,166 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
+  Avatar,
+  Typography,
+  IconButton,
   Card,
   CardContent,
-  Typography,
+  Tooltip,
   Divider,
   Chip,
-  IconButton,
   Menu,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Fab,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 
-// Define interfaces for component data structures
 interface Plan {
+  id: number;
   mainTitle: string;
-  [key: string]: string | boolean; // For dynamic access to subtopic properties
-}
-
-interface Report {
-  plan: string;
-  reportText: string;
+  profileImage: string;
+  userName: string;
+  [key: string]: any;
 }
 
 const ViewPlans: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [reportDialogOpen, setReportDialogOpen] = useState<boolean>(false);
-  const [reportText, setReportText] = useState<string>("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/plans")
       .then((res) => res.json())
       .then((data) => {
-        // Ensure data is an array before setting it to state
-        if (Array.isArray(data)) {
-          setPlans(data);
-        } else {
-          console.error("API did not return an array:", data);
-          setPlans([]); // Set to empty array as fallback
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching plans:", error);
-        setPlans([]); // Set to empty array on error
+        const enriched = data.map((plan: any, index: number) => ({
+          ...plan,
+          id: index,
+          userName: `Vinushan Vimalraj`,
+          profileImage: `https://i.pravatar.cc/150?img=${index + 20}`,
+        }));
+        setPlans(enriched);
       });
   }, []);
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, plan: Plan): void => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPlan(plan);
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
   };
 
-  const handleCloseMenu = (): void => {
-    setAnchorEl(null);
-  };
-
-  const handleReportClick = (): void => {
-    setReportDialogOpen(true);
-    handleCloseMenu();
-  };
-
-  const handleReportSubmit = (): void => {
-    if (selectedPlan) {
-      const existing: Report[] = JSON.parse(localStorage.getItem("reports") || "[]");
-      localStorage.setItem(
-        "reports",
-        JSON.stringify([
-          ...existing,
-          { plan: selectedPlan.mainTitle, reportText },
-        ])
-      );
-      setReportDialogOpen(false);
-      setReportText("");
-    }
-  };
-
-  const scrollToTop = (): void => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
-    <Box p={4}>
-      {Array.isArray(plans) && plans.map((plan, index) => (
-        <Card key={index} sx={{ mb: 4, boxShadow: 3, borderRadius: 3 }}>
-          <CardContent>
+    <Box p={3}>
+      {plans.map((plan) => (
+        <Card
+          key={plan.id}
+          sx={{
+            width: 500,
+            height: 500,
+            mb: 3,
+            borderRadius: 3,
+            boxShadow: 4,
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <CardContent sx={{ p: 2, flex: 1 }}>
+            {/* Header */}
             <Box
               display="flex"
               justifyContent="space-between"
               alignItems="center"
+              mb={1}
             >
-              <Typography variant="h5" fontWeight="bold">
-                {plan.mainTitle}
-              </Typography>
-              <IconButton onClick={(e) => handleMenuClick(e, plan)}>
-                <MoreVertIcon />
+              <Box display="flex" alignItems="center" gap={1}>
+                <Avatar src={plan.profileImage} />
+                <Typography fontWeight={600} fontSize={14}>
+                  {plan.userName}
+                </Typography>
+              </Box>
+              <IconButton onClick={handleMenuOpen}>
+                <MoreVertIcon fontSize="small" />
               </IconButton>
             </Box>
 
-            {[1, 2, 3, 4].map(
-              (num) =>
-                plan[`sub${num}Name`] && (
-                  <Box key={num} mt={3}>
-                    <Typography variant="subtitle1" fontWeight="600">
-                      Subtopic {num}: {plan[`sub${num}Name`] as string} (
-                      {plan[`sub${num}Duration`] as string} days)
-                    </Typography>
-                    <Box mt={1}>
-                      <iframe
-                        width="100%"
-                        height="150"
-                        style={{ borderRadius: "8px" }}
-                        src={`https://www.youtube.com/embed/${
-                          ((plan[`sub${num}Resource`] as string) || "")
-                            .split("v=")[1]
-                            ?.split("&")[0]
-                        }`}
-                        title="YouTube video preview"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
+            <Divider sx={{ my: 1 }} />
+
+            {/* Title */}
+            <Typography
+              fontWeight={700}
+              fontSize={20}
+              textAlign="center"
+              mb={2}
+              sx={{ lineHeight: 1.4 }}
+            >
+              {plan.mainTitle}
+            </Typography>
+
+            {/* Subtopics */}
+            <Box display="flex" flexDirection="column" gap={1.5}>
+              {[1, 2, 3, 4].map((i) => {
+                const name = plan[`sub${i}Name`];
+                const duration = plan[`sub${i}Duration`];
+                const completed = plan[`sub${i}Completed`];
+
+                if (!name) return null;
+
+                return (
+                  <Box
+                    key={i}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Box>
+                      <Typography fontSize={13} fontWeight={600}>
+                        📌 {name}
+                      </Typography>
+                      <Typography fontSize={11} color="text.secondary">
+                        Duration: {duration} days
+                      </Typography>
                     </Box>
                     <Chip
-                      label={
-                        plan[`sub${num}Completed`]
-                          ? "Completed"
-                          : "Not Completed"
-                      }
-                      color={plan[`sub${num}Completed`] ? "success" : "warning"}
-                      sx={{ mt: 1 }}
+                      label={completed ? "✅" : "❌"}
+                      size="small"
+                      color={completed ? "success" : "warning"}
+                      sx={{ fontSize: "12px", height: "22px" }}
                     />
-                    <Divider sx={{ my: 2 }} />
                   </Box>
-                )
-            )}
+                );
+              })}
+            </Box>
           </CardContent>
+
+          {/* Footer */}
+          <Divider />
+          <Box display="flex" justifyContent="space-around" py={1}>
+            <Tooltip title="Like">
+              <IconButton>
+                <FavoriteBorderIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Comment">
+              <IconButton>
+                <ChatBubbleOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Share">
+              <IconButton>
+                <ShareOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Card>
       ))}
 
-      {plans.length === 0 && (
-        <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-          No plans found. Create a new plan to get started!
-        </Typography>
-      )}
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleCloseMenu}
-      >
-        <MenuItem onClick={handleReportClick}>Report</MenuItem>
-        <MenuItem disabled>Share (coming soon)</MenuItem>
+      <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleMenuClose}>
+        <MenuItem>Report</MenuItem>
         <MenuItem disabled>Edit (coming soon)</MenuItem>
+        <MenuItem disabled>Share (coming soon)</MenuItem>
       </Menu>
-
-      <Dialog
-        open={reportDialogOpen}
-        onClose={() => setReportDialogOpen(false)}
-      >
-        <DialogTitle>Report Plan</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="What's the issue?"
-            fullWidth
-            multiline
-            rows={4}
-            value={reportText}
-            onChange={(e) => setReportText(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReportDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleReportSubmit}>
-            Submit Report
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Fab
-        color="primary"
-        aria-label="scroll to top"
-        sx={{ position: "fixed", bottom: 24, right: 24 }}
-        onClick={scrollToTop}
-      >
-        <ArrowUpwardIcon />
-      </Fab>
     </Box>
   );
 };

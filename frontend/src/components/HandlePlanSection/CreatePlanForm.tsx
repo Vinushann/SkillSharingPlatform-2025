@@ -9,8 +9,9 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
+import { generateLearningPlan } from "../GeminiChat/geminiService";
 
-// Define interfaces for component props and state
+// 1. Define TypeScript types
 interface Subtopic {
   name: string;
   duration: string;
@@ -42,7 +43,9 @@ interface CreatePlanFormProps {
   onFormDataChange: (data: PlanPayload) => void;
 }
 
-const CreatePlanForm: React.FC<CreatePlanFormProps> = ({ onFormDataChange }) => {
+const CreatePlanForm: React.FC<CreatePlanFormProps> = ({
+  onFormDataChange,
+}) => {
   const [mainTitle, setMainTitle] = useState<string>("");
   const [subtopics, setSubtopics] = useState<Subtopic[]>([
     { name: "", duration: "", resource: "", completed: false },
@@ -58,17 +61,14 @@ const CreatePlanForm: React.FC<CreatePlanFormProps> = ({ onFormDataChange }) => 
       sub1Duration: subtopics[0].duration,
       sub1Resource: subtopics[0].resource,
       sub1Completed: subtopics[0].completed,
-
       sub2Name: subtopics[1].name,
       sub2Duration: subtopics[1].duration,
       sub2Resource: subtopics[1].resource,
       sub2Completed: subtopics[1].completed,
-
       sub3Name: subtopics[2].name,
       sub3Duration: subtopics[2].duration,
       sub3Resource: subtopics[2].resource,
       sub3Completed: subtopics[2].completed,
-
       sub4Name: subtopics[3].name,
       sub4Duration: subtopics[3].duration,
       sub4Resource: subtopics[3].resource,
@@ -81,13 +81,13 @@ const CreatePlanForm: React.FC<CreatePlanFormProps> = ({ onFormDataChange }) => 
     index: number,
     field: keyof Subtopic,
     value: string | boolean
-  ): void => {
+  ) => {
     const updated = [...subtopics];
-    updated[index] = { ...updated[index], [field]: value };
+    updated[index][field] = value as never;
     setSubtopics(updated);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload: PlanPayload = {
@@ -96,17 +96,14 @@ const CreatePlanForm: React.FC<CreatePlanFormProps> = ({ onFormDataChange }) => 
       sub1Duration: subtopics[0].duration,
       sub1Resource: subtopics[0].resource,
       sub1Completed: subtopics[0].completed,
-
       sub2Name: subtopics[1].name,
       sub2Duration: subtopics[1].duration,
       sub2Resource: subtopics[1].resource,
       sub2Completed: subtopics[1].completed,
-
       sub3Name: subtopics[2].name,
       sub3Duration: subtopics[2].duration,
       sub3Resource: subtopics[2].resource,
       sub3Completed: subtopics[2].completed,
-
       sub4Name: subtopics[3].name,
       sub4Duration: subtopics[3].duration,
       sub4Resource: subtopics[3].resource,
@@ -134,6 +131,34 @@ const CreatePlanForm: React.FC<CreatePlanFormProps> = ({ onFormDataChange }) => 
         value={mainTitle}
         onChange={(e) => setMainTitle(e.target.value)}
       />
+      <Button
+        variant="outlined"
+        color="primary"
+        sx={{ mt: 1, mb: 3 }}
+        onClick={async () => {
+          if (!mainTitle.trim()) {
+            alert("Enter a main title first!");
+            return;
+          }
+          try {
+            const planJson = await generateLearningPlan(mainTitle);
+            const parsed = JSON.parse(planJson);
+            setSubtopics(
+              parsed.map((item: any) => ({
+                name: item.subtopic || item.subtopic_name || "",
+                duration: item.duration || "",
+                resource: item.resource || "",
+                completed: false,
+              }))
+            );
+          } catch (err) {
+            alert("Failed to fetch AI plan.");
+            console.error("AI Error:", err);
+          }
+        }}
+      >
+        Generate Plan with AI
+      </Button>
 
       {subtopics.map((sub, i) => (
         <Box key={i} sx={{ mb: 4 }}>

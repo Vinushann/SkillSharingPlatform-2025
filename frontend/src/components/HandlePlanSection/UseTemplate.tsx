@@ -1,9 +1,8 @@
-// src/components/UseTemplate.tsx
 import React, { useState } from "react";
-import { Box, Paper, Typography, Chip, Button, Divider } from "@mui/material";
+import { Box, Paper, Typography, Chip, Button } from "@mui/material";
 import templatePlans from "./templatePlans";
 
-// Define interfaces for component props and data structures
+// ✅ Types
 interface Subtopic {
   name: string;
   duration: string;
@@ -16,7 +15,7 @@ interface TemplatePlan {
   subtopics: Subtopic[];
 }
 
-interface PlanPayload {
+interface FlattenedPayload {
   mainTitle: string;
   sub1Name: string;
   sub1Duration: string;
@@ -34,51 +33,35 @@ interface PlanPayload {
   sub4Duration: string;
   sub4Resource: string;
   sub4Completed: boolean;
-  [key: string]: string | boolean; // Index signature for dynamic property access
 }
 
 interface UseTemplateProps {
-  onTemplateSelect: (data: PlanPayload) => void;
+  onTemplateSelect: (payload: FlattenedPayload) => void;
 }
 
 const UseTemplate: React.FC<UseTemplateProps> = ({ onTemplateSelect }) => {
   const [selectedPlan, setSelectedPlan] = useState<TemplatePlan | null>(null);
 
-  const handleSelect = (plan: TemplatePlan): void => {
-    // Create a base payload with default values for all required fields
-    const basePayload: Partial<PlanPayload> = {
+  const handleSelect = (plan: TemplatePlan) => {
+    const payload: FlattenedPayload = {
       mainTitle: plan.mainTitle,
+      ...plan.subtopics.reduce((acc: any, sub, idx) => {
+        const i = idx + 1;
+        acc[`sub${i}Name`] = sub.name;
+        acc[`sub${i}Duration`] = sub.duration;
+        acc[`sub${i}Resource`] = sub.resource;
+        acc[`sub${i}Completed`] = sub.completed;
+        return acc;
+      }, {}),
     };
-    
-    // Initialize all subtopic fields with default empty values
-    for (let i = 1; i <= 4; i++) {
-      basePayload[`sub${i}Name`] = '';
-      basePayload[`sub${i}Duration`] = '';
-      basePayload[`sub${i}Resource`] = '';
-      basePayload[`sub${i}Completed`] = false;
-    }
-    
-    // Override with actual values from the template
-    plan.subtopics.forEach((sub, idx) => {
-      const i = idx + 1;
-      if (i <= 4) { // Ensure we don't exceed the 4 subtopics limit
-        basePayload[`sub${i}Name`] = sub.name;
-        basePayload[`sub${i}Duration`] = sub.duration;
-        basePayload[`sub${i}Resource`] = sub.resource;
-        basePayload[`sub${i}Completed`] = sub.completed;
-      }
-    });
 
-    // Cast to full PlanPayload type
-    const payload = basePayload as PlanPayload;
-    
     setSelectedPlan(plan);
     onTemplateSelect(payload);
   };
 
   return (
     <Box>
-      {templatePlans.map((plan, index) => (
+      {templatePlans.map((plan: TemplatePlan, index: number) => (
         <Paper
           key={index}
           elevation={3}
@@ -109,10 +92,10 @@ const UseTemplate: React.FC<UseTemplateProps> = ({ onTemplateSelect }) => {
 
             <Typography variant="body2">
               Duration:{" "}
-              {plan.subtopics.reduce(
-                (acc, cur, i) => acc + (i > 0 ? ", " : "") + cur.duration,
-                ""
-              )}
+              {plan.subtopics
+                .map((sub) => sub.duration)
+                .filter(Boolean)
+                .join(", ")}
             </Typography>
           </Box>
 
