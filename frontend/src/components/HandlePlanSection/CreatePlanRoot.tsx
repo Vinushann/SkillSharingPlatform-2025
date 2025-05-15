@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Box, Container, Tabs, Tab, Typography } from "@mui/material";
 import CreatePlanForm from "./CreatePlanForm";
 import UseTemplate from "./UseTemplate";
 import PreviewPlanSub from "./PreviewPlanSub";
+import { Divider } from "@mui/material";
 
-// ✅ Define the type for planData (should match CreatePlanForm payload)
+// ✅ Same PlanData type
 interface PlanData {
   mainTitle: string;
   sub1Name: string;
@@ -26,52 +26,92 @@ interface PlanData {
 }
 
 const CreatePlanRoot: React.FC = () => {
-  // 🔁 Track which tab is active (0: Create, 1: Template)
   const [tab, setTab] = useState<number>(0);
-
-  // 📦 Shared plan data between form/template and preview
   const [planData, setPlanData] = useState<PlanData | null>(null);
 
-  // 🔄 Handle tab switching
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (newValue: number) => {
     setTab(newValue);
-    setPlanData(null); // Reset preview on tab switch
+    setPlanData(null);
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 5 }}>
-      <Box display="flex">
-        {/* 🧱 Left Section: Form + Template */}
-        <Box flex={1} pr={2}>
-          <Typography variant="h5" fontWeight="bold" mb={2}>
+    <div
+      className="max-w-7xl mx-auto mt-12 px-4"
+      style={{
+        fontFamily: "'Source Sans Pro', sans-serif", // Apply Source Sans Pro font
+      }}
+    >
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Section */}
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold mb-4">
             Start new learning journey
-          </Typography>
+          </h2>
 
-          <Tabs
-            value={tab}
-            onChange={handleTabChange}
-            variant="fullWidth"
-            textColor="success"
-            indicatorColor="success"
-            sx={{ mb: 3 }}
-          >
-            <Tab label="CREATE PLAN" />
-            <Tab label="USE TEMPLATE" />
-          </Tabs>
+          <div className="inline-flex p-1 bg-gray-100 rounded-lg mb-6">
+            <button
+              onClick={() => handleTabChange(0)}
+              className={`appearance-none border-none outline-none bg-transparent 
+                px-4 py-2 text-sm font-medium rounded-md transition-all 
+                ${
+                  tab === 0
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              style={{
+                all: "unset",
+                padding: "0.5rem 1rem",
+                borderRadius: "0.375rem",
+                fontWeight: 500,
+                fontSize: "0.875rem", // text-sm
+                lineHeight: "1.25rem",
+                cursor: "pointer",
+                backgroundColor: tab === 0 ? "#ffffff" : "transparent",
+                color: tab === 0 ? "#111827" : "#6b7280", // tailwind text-gray-900 / gray-500
+                boxShadow: tab === 0 ? "0 1px 2px rgba(0, 0, 0, 0.05)" : "none",
+              }}
+            >
+              CREATE PLAN
+            </button>
 
+            <button
+              onClick={() => handleTabChange(1)}
+              className={`appearance-none border-none outline-none bg-transparent 
+                px-4 py-2 text-sm font-medium rounded-md transition-all 
+                ${
+                  tab === 1
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              style={{
+                all: "unset",
+                padding: "0.5rem 1rem",
+                borderRadius: "0.375rem",
+                fontWeight: 500,
+                fontSize: "0.875rem",
+                lineHeight: "1.25rem",
+                cursor: "pointer",
+                backgroundColor: tab === 1 ? "#ffffff" : "transparent",
+                color: tab === 1 ? "#111827" : "#6b7280",
+                boxShadow: tab === 1 ? "0 1px 2px rgba(0, 0, 0, 0.05)" : "none",
+              }}
+            >
+              USE TEMPLATE
+            </button>
+          </div>
+
+          {/* Conditional Content */}
           {tab === 0 && <CreatePlanForm onFormDataChange={setPlanData} />}
           {tab === 1 && <UseTemplate onTemplateSelect={setPlanData} />}
-        </Box>
+        </div>
 
-        {/* 🎯 Right Section: Live Preview */}
-        <Box flex={1} pl={2}>
-          <Typography variant="h5" fontWeight="bold" mb={2}>
-            Preview
-          </Typography>
+        {/* Right Section */}
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold mb-4">Preview</h2>
           <PreviewPlanSub planData={planData} />
-        </Box>
-      </Box>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 
