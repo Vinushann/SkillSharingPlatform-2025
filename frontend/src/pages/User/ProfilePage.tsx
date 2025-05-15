@@ -4,6 +4,9 @@ import { userApi } from "../../api/userApi";
 import { User, CreateUserRequest } from "../../types/user-types";
 import UploadFileService from "../../services/uploadFileService";
 import DeactivateModal from "./DeactivateModal";
+import { Typography } from "@mui/material";
+import ViewPlans from "../../components/HandlePlanSection/ViewPlans";
+import ProfilePosts from "./ProfilePosts";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -317,12 +320,16 @@ const ProfilePage = () => {
                 >
                   Deactivate account
                 </button>
-                <DeactivateModal isOpen={accountDeactivatedModalOpened} onClose={() => setAccountDeactivatedModalOpened(false)} />
+                <DeactivateModal
+                  isOpen={accountDeactivatedModalOpened}
+                  onClose={() => setAccountDeactivatedModalOpened(false)}
+                />
               </div>
             )}
           </div>
         </div>
       </div>
+      <ProfilePosts />
     </div>
   );
 };
