@@ -12,12 +12,14 @@ const Navbar: React.FC = () => {
   }, []);
 
   const navItems = [
-    { path: "/", icon: "🏠", text: "Home" },
-    { path: "/all-posts", icon: "📜", text: "Browse" },
-    { path: "/goals", icon: "✍️", text: "Goals" },
-    { path: "/my-posts", icon: "📚", text: "My Posts" },
-    { path: "/learning", icon: "🎯", text: "Learning Plans" },
-    { path: "/notifications", icon: "🔔", text: "Notifications" },
+    { path: "/", icon: "", text: "Home" },
+    { path: "/all-posts", icon: "", text: "Browse" },
+    { path: "/goals", icon: "", text: "Goals" },
+    { path: "/my-posts", icon: "", text: "My Posts" },
+    { path: "/learning", icon: "", text: "Learning Plans" },
+    { path: "/notifications", icon: "", text: "Notifications" },
+    { path: "/note", icon: "", text: "Note" },
+    { path: "/buybook", icon: "", text: "Buy" },
 
     ...(isLoggedIn
       ? [{ path: "/profile", icon: "👤", text: "Profile" }]
