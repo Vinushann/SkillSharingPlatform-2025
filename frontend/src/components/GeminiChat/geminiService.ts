@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, Content, Part } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize the Gemini API client
 const genAI = new GoogleGenerativeAI("AIzaSyAr9OyNOheTeJk-gO3hQyFHbFa66D-iq28");
@@ -6,7 +6,7 @@ const genAI = new GoogleGenerativeAI("AIzaSyAr9OyNOheTeJk-gO3hQyFHbFa66D-iq28");
 // Define message structure expected by Gemini
 export interface GeminiMessage {
   role: "user" | "model" | string;
-  parts: Part[];
+  parts: { text: string }[];
 }
 
 // Send a message using the Gemini chat model
@@ -16,16 +16,17 @@ export const sendGeminiMessage = async (messages: GeminiMessage[]): Promise<stri
       throw new Error("Message history must start with a valid user message.");
     }
 
-    const firstMessage = messages[0];
-    if (!firstMessage?.role || firstMessage.role !== "user") {
-      throw new Error("First message must be from role: 'user'.");
+    // Separate history (all messages except the last one) from the new message
+    const history = messages.slice(0, -1);
+    const newMessage = messages[messages.length - 1]?.parts?.[0]?.text || "";
+
+    if (!newMessage) {
+      throw new Error("No new message to send.");
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const chat = model.startChat({ history: messages });
-
-    const lastUserMessage = messages[messages.length - 1]?.parts?.[0]?.text || "";
-    const result = await chat.sendMessage(lastUserMessage);
+    const chat = model.startChat({ history: history });
+    const result = await chat.sendMessage(newMessage);
     const response = await result.response;
     return response.text();
   } catch (err) {

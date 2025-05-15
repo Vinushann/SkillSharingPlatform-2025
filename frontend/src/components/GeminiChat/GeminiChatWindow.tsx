@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,31 +8,72 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import SendIcon from "@mui/icons-material/Send";
+import { sendGeminiMessage } from "./geminiService"; // Assume this is an API service function
 
+// Define the Message interface for type safety
 interface Message {
-  role: "user" | "model" | string;
-  parts?: { text: string }[];
+  role: "user" | "model";
+  parts: { text: string }[];
 }
 
+// Define props interface for the component
 interface GeminiChatWindowProps {
   onClose: () => void;
-  messages: Message[];
-  onSend: (message: string) => void;
   isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const GeminiChatWindow: React.FC<GeminiChatWindowProps> = ({
   onClose,
-  messages,
-  onSend,
   isLoading,
+  setIsLoading,
 }) => {
+  // State for user input and chat messages
   const [input, setInput] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  const handleSend = () => {
-    if (input.trim()) {
-      onSend(input);
-      setInput("");
+  // Ref for scrolling to the bottom of the message list
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to the bottom whenever messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Handle sending a message to the Gemini AI
+  const handleSend = async () => {
+    if (!input.trim()) return; // Prevent sending empty messages
+
+    const userMsg: Message = {
+      role: "user",
+      parts: [{ text: input }],
+    };
+
+    // Add user message to the chat and clear input
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      // Call the API to get the AI response
+      const replyText = await sendGeminiMessage([...messages, userMsg]);
+      const botReply: Message = {
+        role: "model",
+        parts: [{ text: replyText }],
+      };
+      setMessages((prev) => [...prev, botReply]);
+    } catch (err) {
+      // Handle API errors gracefully
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "model",
+          parts: [{ text: "❌ Gemini failed to respond." }],
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,6 +93,7 @@ const GeminiChatWindow: React.FC<GeminiChatWindowProps> = ({
         zIndex: 1500,
       }}
     >
+      {/* Header */}
       <Box
         sx={{
           backgroundColor: "#3f51b5",
@@ -63,13 +105,18 @@ const GeminiChatWindow: React.FC<GeminiChatWindowProps> = ({
         }}
       >
         <Typography fontWeight="bold">Gemini Assistant</Typography>
-        <IconButton onClick={onClose} sx={{ color: "white" }}>
+        <IconButton
+          onClick={onClose}
+          sx={{ color: "white" }}
+          aria-label="Close chat"
+        >
           <CloseIcon />
         </IconButton>
       </Box>
 
+      {/* Message Area */}
       <Box sx={{ flexGrow: 1, overflowY: "auto", p: 2, bgcolor: "#f5f5f5" }}>
-        {(messages || []).map((msg, idx) => (
+        {messages.map((msg, idx) => (
           <Box
             key={idx}
             sx={{
@@ -87,29 +134,39 @@ const GeminiChatWindow: React.FC<GeminiChatWindowProps> = ({
                 maxWidth: "80%",
               }}
             >
-              <Typography variant="body2">
-                {msg.parts?.[0]?.text || "(no message)"}
-              </Typography>
+              <Typography variant="body2">{msg.parts[0].text}</Typography>
             </Box>
           </Box>
         ))}
         {isLoading && <CircularProgress size={20} sx={{ ml: 1 }} />}
+        <div ref={messagesEndRef} />
       </Box>
 
-      <Box sx={{ p: 1.5, borderTop: "1px solid #ddd" }}>
+      {/* Input Area */}
+      <Box
+        sx={{ p: 1.5, borderTop: "1px solid #ddd", display: "flex", gap: 1 }}
+      >
         <TextField
           placeholder="Ask something..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
           fullWidth
           size="small"
+          aria-label="Chat input"
         />
+        <IconButton
+          onClick={handleSend}
+          sx={{
+            backgroundColor: "#3f51b5",
+            color: "#fff",
+            borderRadius: 1,
+            px: 2,
+            "&:hover": { backgroundColor: "#303f9f" },
+          }}
+          aria-label="Send message"
+        >
+          <SendIcon />
+        </IconButton>
       </Box>
     </Paper>
   );
