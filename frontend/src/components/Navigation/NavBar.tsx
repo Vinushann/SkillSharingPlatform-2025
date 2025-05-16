@@ -19,8 +19,7 @@ const Navbar: React.FC = () => {
     { path: "/learning", icon: "", text: "Learning Plans" },
     { path: "/notifications", icon: "", text: "Notifications" },
     { path: "/note", icon: "", text: "Note" },
-    { path: "/buybook", icon: "", text: "Buy" },
-
+    { path: "http://localhost:5174/", icon: "", text: "Buy", external: true }, // External link
     ...(isLoggedIn
       ? [{ path: "/profile", icon: "👤", text: "Profile" }]
       : [{ path: "/login", icon: "🔑", text: "Login" }]),
@@ -43,7 +42,7 @@ const Navbar: React.FC = () => {
         </Link>
 
         <ul className="flex space-x-4">
-          {navItems.map(({ path, icon, text }) => {
+          {navItems.map(({ path, icon, text, external }) => {
             const isActive = location.pathname === path;
 
             return (
@@ -52,17 +51,29 @@ const Navbar: React.FC = () => {
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link
-                  to={path}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-md transition duration-200 font-medium ${
-                    isActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <span className="text-lg">{icon}</span>
-                  <span>{text}</span>
-                </Link>
+                {external ? (
+                  <a
+                    href={path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 px-4 py-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 font-medium transition duration-200"
+                  >
+                    <span className="text-lg">{icon}</span>
+                    <span>{text}</span>
+                  </a>
+                ) : (
+                  <Link
+                    to={path}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-md transition duration-200 font-medium ${
+                      isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-700 hover:text-blue-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="text-lg">{icon}</span>
+                    <span>{text}</span>
+                  </Link>
+                )}
               </motion.li>
             );
           })}
