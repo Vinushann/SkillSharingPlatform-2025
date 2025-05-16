@@ -18,6 +18,8 @@ public class Plann {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String userId;
+
     private String mainTitle;
 
     // Subtopic 1
@@ -43,4 +45,6 @@ public class Plann {
     private String sub4Duration;
     private String sub4Resource;
     private boolean sub4Completed;
+
+
 }

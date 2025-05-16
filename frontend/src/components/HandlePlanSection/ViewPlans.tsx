@@ -1,201 +1,230 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
+  Avatar,
+  Typography,
+  IconButton,
   Card,
   CardContent,
-  Typography,
+  Tooltip,
   Divider,
   Chip,
-  IconButton,
   Menu,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Fab,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 
-// Define interfaces for component data structures
 interface Plan {
+  id: number;
   mainTitle: string;
-  [key: string]: string | boolean; // For dynamic access to subtopic properties
+  userName: string;
+  profileImage: string;
+  [key: string]: any;
 }
 
-interface Report {
-  plan: string;
-  reportText: string;
-}
+const getRandomName = () => {
+  const names = [
+    "Aanya Rajapaksha", // F
+    "Isuru Perera", // M
+    "Kavindi Fernando", // F
+    "Nimal Dissanayake", // M
+    "Tharushi Silva", // F
+    "Chathura Gunasekara", // M
+  ];
+  return names[Math.floor(Math.random() * names.length)];
+};
+
+const getAvatarUrl = (userName: string, index: number) => {
+  const firstName = userName.split(" ")[0];
+  const isFemale = firstName.endsWith("a") || firstName.endsWith("i");
+  const id = index % 100; // limit to 100 to avoid broken links
+  return isFemale
+    ? `https://randomuser.me/api/portraits/women/${id}.jpg`
+    : `https://randomuser.me/api/portraits/men/${id}.jpg`;
+};
 
 const ViewPlans: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [reportDialogOpen, setReportDialogOpen] = useState<boolean>(false);
-  const [reportText, setReportText] = useState<string>("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [liked, setLiked] = useState<{ [id: number]: boolean }>({});
+
+  // Load likes from localStorage
+  useEffect(() => {
+    const storedLikes = localStorage.getItem("likedPlans");
+    if (storedLikes) {
+      setLiked(JSON.parse(storedLikes));
+    }
+  }, []);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/plans")
       .then((res) => res.json())
       .then((data) => {
-        // Ensure data is an array before setting it to state
-        if (Array.isArray(data)) {
-          setPlans(data);
-        } else {
-          console.error("API did not return an array:", data);
-          setPlans([]); // Set to empty array as fallback
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching plans:", error);
-        setPlans([]); // Set to empty array on error
+        const enriched = data.map((plan: any, index: number) => {
+          const name = getRandomName(); // Replace with real userName from DB if available
+          return {
+            ...plan,
+            id: index,
+            userName: name,
+            profileImage: getAvatarUrl(name, index),
+          };
+        });
+        setPlans(enriched);
       });
   }, []);
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, plan: Plan): void => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPlan(plan);
+  // Save likes to localStorage
+  const toggleLike = (id: number) => {
+    const updated = { ...liked, [id]: !liked[id] };
+    setLiked(updated);
+    localStorage.setItem("likedPlans", JSON.stringify(updated));
   };
 
-  const handleCloseMenu = (): void => {
-    setAnchorEl(null);
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
   };
 
-  const handleReportClick = (): void => {
-    setReportDialogOpen(true);
-    handleCloseMenu();
-  };
-
-  const handleReportSubmit = (): void => {
-    if (selectedPlan) {
-      const existing: Report[] = JSON.parse(localStorage.getItem("reports") || "[]");
-      localStorage.setItem(
-        "reports",
-        JSON.stringify([
-          ...existing,
-          { plan: selectedPlan.mainTitle, reportText },
-        ])
-      );
-      setReportDialogOpen(false);
-      setReportText("");
-    }
-  };
-
-  const scrollToTop = (): void => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
-    <Box p={4}>
-      {Array.isArray(plans) && plans.map((plan, index) => (
-        <Card key={index} sx={{ mb: 4, boxShadow: 3, borderRadius: 3 }}>
-          <CardContent>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography variant="h5" fontWeight="bold">
+    <div>
+      <Box
+        display="flex"
+        justifyContent="space-around"
+        flexWrap="wrap"
+        gap={3}
+        p={3}
+      >
+        {plans.map((plan) => (
+          <Card
+            key={plan.id}
+            sx={{
+              width: 320,
+              borderRadius: 4,
+              border: "2px solid #e0e0e0",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <CardContent sx={{ p: 2, flex: 1 }}>
+              {/* Header */}
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
+              >
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Avatar
+                    src={plan.profileImage}
+                    sx={{ width: 32, height: 32 }}
+                  />
+                  <Box>
+                    <Typography fontSize={13} fontWeight={600}>
+                      {plan.userName}
+                    </Typography>
+                    <Typography fontSize={11} color="text.secondary">
+                      Posted on May 15, 2025
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton onClick={handleMenuOpen} size="small">
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </Box>
+
+              <Divider sx={{ my: 1.5, borderBottomWidth: 2 }} />
+
+              {/* Main Title */}
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                fontSize={16}
+                textAlign="left"
+                gutterBottom
+                sx={{ lineHeight: 1.3 }}
+              >
                 {plan.mainTitle}
               </Typography>
-              <IconButton onClick={(e) => handleMenuClick(e, plan)}>
-                <MoreVertIcon />
-              </IconButton>
-            </Box>
 
-            {[1, 2, 3, 4].map(
-              (num) =>
-                plan[`sub${num}Name`] && (
-                  <Box key={num} mt={3}>
-                    <Typography variant="subtitle1" fontWeight="600">
-                      Subtopic {num}: {plan[`sub${num}Name`] as string} (
-                      {plan[`sub${num}Duration`] as string} days)
-                    </Typography>
-                    <Box mt={1}>
-                      <iframe
-                        width="100%"
-                        height="150"
-                        style={{ borderRadius: "8px" }}
-                        src={`https://www.youtube.com/embed/${
-                          ((plan[`sub${num}Resource`] as string) || "")
-                            .split("v=")[1]
-                            ?.split("&")[0]
-                        }`}
-                        title="YouTube video preview"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+              <Divider sx={{ my: 1.5 }} />
+
+              {/* Subtopics */}
+              <Box display="flex" flexDirection="column" gap={1.2}>
+                {[1, 2, 3, 4].map((i) => {
+                  const name = plan[`sub${i}Name`];
+                  const duration = plan[`sub${i}Duration`];
+                  const completed = plan[`sub${i}Completed`];
+                  if (!name) return null;
+
+                  return (
+                    <Box
+                      key={i}
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      px={1}
+                    >
+                      <Box>
+                        <Typography fontSize={13} fontWeight={500}>
+                          {name}
+                        </Typography>
+                        <Typography fontSize={11} color="text.secondary">
+                          {duration} days
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={completed ? "Done" : "Pending"}
+                        size="small"
+                        color={completed ? "success" : "default"}
+                        sx={{ fontSize: "11px", height: "20px" }}
                       />
                     </Box>
-                    <Chip
-                      label={
-                        plan[`sub${num}Completed`]
-                          ? "Completed"
-                          : "Not Completed"
-                      }
-                      color={plan[`sub${num}Completed`] ? "success" : "warning"}
-                      sx={{ mt: 1 }}
-                    />
-                    <Divider sx={{ my: 2 }} />
-                  </Box>
-                )
-            )}
-          </CardContent>
-        </Card>
-      ))}
+                  );
+                })}
+              </Box>
+            </CardContent>
 
-      {plans.length === 0 && (
-        <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-          No plans found. Create a new plan to get started!
-        </Typography>
-      )}
+            {/* Footer Actions */}
+            <Divider sx={{ my: 1.5, borderBottomWidth: 2 }} />
+            <Box display="flex" justifyContent="space-between" px={2} py={1}>
+              <Tooltip title="Like">
+                <IconButton size="small" onClick={() => toggleLike(plan.id)}>
+                  {liked[plan.id] ? (
+                    <FavoriteIcon fontSize="small" color="error" />
+                  ) : (
+                    <FavoriteBorderIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Comment">
+                <IconButton size="small">
+                  <ChatBubbleOutlineIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Share">
+                <IconButton size="small">
+                  <ShareOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Card>
+        ))}
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleCloseMenu}
-      >
-        <MenuItem onClick={handleReportClick}>Report</MenuItem>
-        <MenuItem disabled>Share (coming soon)</MenuItem>
-        <MenuItem disabled>Edit (coming soon)</MenuItem>
-      </Menu>
-
-      <Dialog
-        open={reportDialogOpen}
-        onClose={() => setReportDialogOpen(false)}
-      >
-        <DialogTitle>Report Plan</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="What's the issue?"
-            fullWidth
-            multiline
-            rows={4}
-            value={reportText}
-            onChange={(e) => setReportText(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReportDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleReportSubmit}>
-            Submit Report
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Fab
-        color="primary"
-        aria-label="scroll to top"
-        sx={{ position: "fixed", bottom: 24, right: 24 }}
-        onClick={scrollToTop}
-      >
-        <ArrowUpwardIcon />
-      </Fab>
-    </Box>
+        {/* Popup Menu */}
+        <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleMenuClose}>
+          <MenuItem>Report</MenuItem>
+          <MenuItem disabled>Edit (coming soon)</MenuItem>
+          <MenuItem disabled>Share (coming soon)</MenuItem>
+        </Menu>
+      </Box>
+    </div>
   );
 };
 
