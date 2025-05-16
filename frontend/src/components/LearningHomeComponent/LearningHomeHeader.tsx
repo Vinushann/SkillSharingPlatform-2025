@@ -15,23 +15,18 @@ import FloatingChatButton from "../GeminiChat/FloatingChatButton";
 import GeminiChatWindow from "../GeminiChat/GeminiChatWindow";
 import { sendGeminiMessage } from "../GeminiChat/geminiService";
 
-const TIMER_STORAGE_KEY = "learning_timer_data";
-
 const LearningHomeHeader: React.FC = () => {
   const navigate = useNavigate();
 
-  // 🔹 Gemini Chat states
   const [showChatWindow, setShowChatWindow] = useState(false);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
 
-  // 🔹 Timer states
-  const [selectedTime, setSelectedTime] = useState<number>(20); // minutes
-  const [timeLeft, setTimeLeft] = useState<number>(0); // seconds
+  const [selectedTime, setSelectedTime] = useState<number>(20);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [isLocked, setIsLocked] = useState<boolean>(false);
 
-  // 🔹 Format time for display
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -40,7 +35,6 @@ const LearningHomeHeader: React.FC = () => {
       .padStart(2, "0")}`;
   };
 
-  // 🔹 Timer logic: tick every second
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isTimerRunning && timeLeft > 0) {
@@ -50,42 +44,19 @@ const LearningHomeHeader: React.FC = () => {
     } else if (timeLeft === 0 && isTimerRunning) {
       setIsTimerRunning(false);
       setIsLocked(true);
-      localStorage.removeItem(TIMER_STORAGE_KEY);
     }
     return () => clearInterval(timer);
   }, [isTimerRunning, timeLeft]);
 
-  // 🔹 Start or restore timer on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(TIMER_STORAGE_KEY);
-    if (stored) {
-      const { expiresAt } = JSON.parse(stored);
-      const now = Date.now();
-      const remaining = Math.floor((expiresAt - now) / 1000);
-      if (remaining > 0) {
-        setTimeLeft(remaining);
-        setIsTimerRunning(true);
-      } else {
-        setIsLocked(true);
-      }
-    } else {
-      handleStartTimer(20); // default start if nothing in storage
-    }
-  }, []);
-
-  // 🔹 Start timer function
   const handleStartTimer = (minutes: number) => {
     const duration = minutes * 60;
-    const expiresAt = Date.now() + duration * 1000;
-
-    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify({ expiresAt }));
 
     setSelectedTime(minutes);
     setTimeLeft(duration);
     setIsTimerRunning(true);
+    setIsLocked(false);
   };
 
-  // 🔹 Gemini Chat send handler
   const handleChatSend = useCallback(
     async (userText: string) => {
       const userMsg = { role: "user", parts: [{ text: userText }] };
@@ -111,7 +82,6 @@ const LearningHomeHeader: React.FC = () => {
 
   return (
     <div>
-      {/* 🔹 Lock Overlay */}
       {isLocked && (
         <Box
           sx={{
@@ -133,7 +103,6 @@ const LearningHomeHeader: React.FC = () => {
         </Box>
       )}
 
-      {/* 🔷 Header Section */}
       <Box
         sx={{
           display: "flex",
@@ -180,7 +149,7 @@ const LearningHomeHeader: React.FC = () => {
         </Box>
       </Box>
 
-      {/* 🔹 Timer Bottom Left */}
+      {/* Timer Panel */}
       <Box
         sx={{
           position: "fixed",
@@ -235,7 +204,7 @@ const LearningHomeHeader: React.FC = () => {
         </Button>
       </Box>
 
-      {/* 🔹 Chat */}
+      {/* Chat */}
       <FloatingChatButton onClick={() => setShowChatWindow((prev) => !prev)} />
       {showChatWindow && (
         <GeminiChatWindow
