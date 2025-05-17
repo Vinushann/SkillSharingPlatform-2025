@@ -38,13 +38,13 @@ const getRandomName = () => {
   return names[Math.floor(Math.random() * names.length)];
 };
 
-const getAvatarUrl = (userName: string, index: number) => {
+const getAvatarUrl = (userName: string, id: number) => {
   const firstName = userName.split(" ")[0];
   const isFemale = firstName.endsWith("a") || firstName.endsWith("i");
-  const id = index % 100; // limit to 100 to avoid broken links
+  const avatarId = id % 100; // Ensure ID is between 0 and 99 for avatar URL
   return isFemale
-    ? `https://randomuser.me/api/portraits/women/${id}.jpg`
-    : `https://randomuser.me/api/portraits/men/${id}.jpg`;
+    ? `https://randomuser.me/api/portraits/women/${avatarId}.jpg`
+    : `https://randomuser.me/api/portraits/men/${avatarId}.jpg`;
 };
 
 const ViewPlans: React.FC = () => {
@@ -64,13 +64,16 @@ const ViewPlans: React.FC = () => {
     fetch("http://localhost:8080/api/plans")
       .then((res) => res.json())
       .then((data) => {
-        const enriched = data.map((plan: any, index: number) => {
+        // Filter out plans where user_id is '666'
+        const filteredData = data.filter(
+          (plan: any) => plan.userId !== "fd049257-19de-4619-8020-77f3149e95e6"
+        );
+        const enriched = filteredData.map((plan: any) => {
           const name = getRandomName(); // Replace with real userName from DB if available
           return {
             ...plan,
-            id: index,
             userName: name,
-            profileImage: getAvatarUrl(name, index),
+            profileImage: getAvatarUrl(name, plan.id),
           };
         });
         setPlans(enriched);
