@@ -151,4 +151,12 @@ public class EngagementService {
         dto.setUpdatedAt(comment.getUpdatedAt());
         return dto;
     }
+
+    public Long getPostAuthorId(Long postId) {
+        System.out.println("Fetching post with ID: " + postId);
+        SkillPost post = skillPostRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
+        System.out.println("Found post: " + post);
+        return post.getUser().getId();
+    }
 }
