@@ -14,9 +14,10 @@ import RegisterPage from "./pages/Auth/RegisterPage";
 import FollowUserPage from "./pages/User/FollowUserPage";
 import GoalsPage from "./pages/Goals/GoalsPage";
 import CreatePlanRoot from "./components/HandlePlanSection/CreatePlanRoot";
-
 import NoteTaking from "./components/Note/NoteTaking";
 import LearningHomePage from "./pages/LearningHomePage";
+import LoginError from "./pages/Auth/LoginError";  // ← Import the new LoginError page
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 
@@ -49,8 +50,10 @@ const App: React.FC = () => {
                 path="/login/oauth2/code/google"
                 element={<OAuth2RedirectHandler />}
               />
+              <Route path="/login-error" element={<LoginError />} /> {/* ← Add this */}
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profile/:id" element={<FollowUserPage />} />
+
               {/* APPLICATION_ROUTES */}
               <Route path="/" element={<Home />} />
               <Route path="/all-posts" element={<PostsPage />} />
